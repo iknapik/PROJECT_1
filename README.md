@@ -1,5 +1,5 @@
 # PROJECT_1
-School Register
-Nie używam precompiled headers
-(trzeba wyłączyć w opcjach)
-wersja dla visual studio
+School Register<br>
+Nie używam precompiled headers<br>
+(trzeba wyłączyć w opcjach)<br>
+wersja dla visual studio<br>
