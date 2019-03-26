@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="StudentDao.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -39,11 +36,11 @@
     <ClInclude Include="IdManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CSVDb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="project_1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -66,6 +63,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="IdManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CSVDb.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

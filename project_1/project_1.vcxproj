@@ -153,9 +153,9 @@
   <ItemGroup>
     <ClInclude Include="ClassDao.h" />
     <ClInclude Include="ClassInfo.h" />
+    <ClInclude Include="CSVDb.h" />
     <ClInclude Include="IdManager.h" />
     <ClInclude Include="MarkInfo.h" />
-    <ClInclude Include="pch.h" />
     <ClInclude Include="StudentInfo.h" />
     <ClInclude Include="StudentDao.h" />
     <ClInclude Include="StudentModel.h" />
@@ -163,14 +163,9 @@
   <ItemGroup>
     <ClCompile Include="ClassDao.cpp" />
     <ClCompile Include="ClassInfo.cpp" />
+    <ClCompile Include="CSVDb.cpp" />
     <ClCompile Include="IdManager.cpp" />
     <ClCompile Include="MarkInfo.cpp" />
-    <ClCompile Include="pch.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="project_1.cpp" />
     <ClCompile Include="StudentInfo.cpp" />
     <ClCompile Include="StudentDao.cpp" />

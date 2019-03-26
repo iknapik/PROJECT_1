@@ -6,130 +6,52 @@
 #include <cstdio>
 
 using namespace school;
+std::array<std::string, number_of_student_fields> StudentDao::convert(const StudentInfo& sinfo) const
+{
+	auto arr = std::array<std::string, number_of_student_fields>();
+	arr[0] = std::to_string(sinfo.get_id());
+	arr[1] = sinfo.m_firstname;
+	arr[2] = sinfo.m_lastname;
+	arr[3] = sinfo.m_PESEL;
+	arr[4] = sinfo.m_city;
+	arr[5] = sinfo.m_address;
+	return arr;
+}
 
+std::unique_ptr<StudentInfo> StudentDao::convert(const std::array<std::string, number_of_student_fields>& arr) const
+{
+	auto student_ptr = std::make_unique<StudentInfo>(arr[1], arr[2], arr[3], arr[4], arr[5], std::stoul(arr[0]));
+	return student_ptr;
+}
 
 bool StudentDao::add_student(const StudentInfo& student) const
 {
-	auto file = std::ofstream(m_file_name, std::ios::app);
-	file << student << '\n';
-	return true;
+	return m_database->add_row(convert(student));
 }
 
-StudentInfo StudentDao::get_student(uint id) const
+bool StudentDao::remove_student(unsigned id) const
 {
-	// if student not found returns StudentInfo with id 0
-
-	auto file = std::ifstream(m_file_name, std::ios::in);
-	while (file)
-	{
-		if (file.get() == '"')
-		{
-			std::string str;
-
-			std::getline(file, str, ',');
-			//std::cout << "\n*****" + str + "******\n";
-			uint tempid = std::stoi(str);
-			if (id == tempid)
-			{
-				std::string firstname, lastname, pesel;
-				std::getline(file, firstname, ',');
-				std::getline(file, lastname, ',');
-				std::getline(file, pesel, '"');
-				auto sinfo = StudentInfo(firstname, lastname, pesel);
-				sinfo.set_id(id);
-				return sinfo;
-			}
-			else
-			{
-				std::getline(file, str, '"');
-				file.get();
-			}
-		}
-	}
-	auto sinfo = StudentInfo("", "", "");
-	sinfo.set_id(0);
-	return sinfo;
+	return m_database->remove_row(id);
 }
 
-bool StudentDao::update_student(const StudentInfo& student) const
+bool StudentDao::update_student(const StudentInfo& sinfo) const
 {
-	if (remove_student(student.get_id())) return add_student(student);
-	return false;
+	return m_database->update_row(convert(sinfo));
 }
 
-bool StudentDao::remove_student(uint id) const
+std::unique_ptr<std::map<unsigned, std::unique_ptr<StudentInfo>>> StudentDao::get_students() const
 {
-	bool removed = false;
-	auto temp = std::ofstream("temp.txt", std::ios::out | std::ios::trunc);
-	auto file = std::ifstream(m_file_name, std::ios::in);
+	auto map_ptr = std::make_unique<std::map<unsigned, std::unique_ptr<StudentInfo>>>();
+	auto list_ptr = m_database->get_rows();
+	for (auto& i : *list_ptr)
 	{
-		while (file)
-		{
-			if (file.get() == '"')
-			{
-				std::string str;
-				std::getline(file, str, ',');
-				uint tempid = std::stoi(str);
-				if (tempid == id)
-				{
-					std::getline(file, str, '"');
-					file.get();
-					removed = true;
-				}
-				else
-				{
-					temp << '"' << str << ',';
-					std::getline(file, str, '\n');
-					temp << str << '\n';
-				}
-			}
-		}
-		if (removed)
-		{
-			file.close();
-			temp.close();
-			//std::cout << "\nRENAMING\n";
-			std::remove(m_file_name);
-			std::rename("temp.txt", m_file_name);
-		}
+		auto student = convert(*i);
+		(*map_ptr)[student->get_id()] = std::move(student);
 	}
-	return removed;
+	return map_ptr;
 }
 
-template<>
-struct std::less<std::unique_ptr<StudentInfo>>
+std::unique_ptr<StudentInfo> StudentDao::get_student(unsigned id) const
 {
-	bool operator()(const std::unique_ptr<StudentInfo>& s1, const std::unique_ptr<StudentInfo>& s2)
-	{
-		return s1->get_id() < s2->get_id();
-	}
-};
-
-
-std::unique_ptr<std::map<unsigned int, std::unique_ptr<StudentInfo>>> StudentDao::get_students() const
-{
-	auto map_ptr = std::make_unique<std::map<unsigned int, std::unique_ptr<StudentInfo>>>();
-	auto file = std::ifstream(m_file_name, std::ios::in);
-	while (file)
-	{
-		if (file.get() == '"')
-		{
-			std::string str;
-			std::getline(file, str, ',');
-			uint tempid = std::stoi(str);
-			std::string firstname, lastname, pesel;
-			std::getline(file, firstname, ',');
-			std::getline(file, lastname, ',');
-			std::getline(file, pesel, '"');
-			file.get();
-			//std::cout << "\n" << "iter";
-			auto s_ptr = std::make_unique<StudentInfo>(firstname, lastname, pesel);
-			s_ptr->set_id(tempid);
-			(*map_ptr)[tempid] = std::move(s_ptr);
-		}
-		else
-			return map_ptr;
-	}
-
-		return map_ptr;
+	return convert(m_database->get_row(id));
 }
