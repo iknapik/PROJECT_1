@@ -49,7 +49,15 @@ bool IdManager::save()
 
 bool IdManager::release_id(unsigned int id)
 {
-	id_vector.push_back(id);
-	save();
-	return true;
+	// checks if id was used
+	if (id < id_vector[0])
+	{
+		// checks if id wasn't already released
+		for (auto i : id_vector) if (i == id) return false;
+		id_vector.push_back(id);
+		save();
+		return true;
+	}
+	else
+		return false;
 }

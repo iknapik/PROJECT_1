@@ -4,13 +4,14 @@ using namespace cheshire;
 
 CSVDb::CSVDb(const char* filename, const std::vector<std::string>& header) : m_header(header), m_file_name(filename)
 {
-
+	// if file exists and it's not empty do nothing
 	std::ifstream test(filename, std::ios::in);
 	if (test.good())
 	{
 		std::string str;
 		if (test >> str) return;
 	}
+	// create file if not exists, write header
 	else
 	{
 		test.close();
@@ -44,6 +45,9 @@ bool CSVDb::remove_row(unsigned id) const
 	bool removed = false;
 	auto temp = std::ofstream("temp.txt", std::ios::out | std::ios::trunc);
 	auto file = std::ifstream(m_file_name, std::ios::in);
+	// read from orginal file and pipe it into temp
+	// if found id don't write that row into temp
+	// if row was skipped replace orignal file with temp one
 	{
 		std::string str;
 		std::getline(file, str);
@@ -78,6 +82,7 @@ bool CSVDb::remove_row(unsigned id) const
 
 bool CSVDb::update_row(uint id, const std::map<const std::string, std::string>& data) const
 {
+	// it always adds at the end of the file, it doesn't sort by id
 	if (data.empty()) return false;
 	if (remove_row(id)) return add_row(id, data);
 	return false;
@@ -86,7 +91,7 @@ bool CSVDb::update_row(uint id, const std::map<const std::string, std::string>& 
 
 std::pair<unsigned,std::unique_ptr<std::map<const std::string, std::string>>> CSVDb::get_row(unsigned id) const
 {
-	// if student not found returns empty array
+	// if student not found returns empty map
 
 	auto file = std::ifstream(m_file_name, std::ios::in);
 	std::string str;
@@ -115,7 +120,7 @@ std::pair<unsigned,std::unique_ptr<std::map<const std::string, std::string>>> CS
 }
 
 
-
+// 2 secs Faster than array version
 std::unique_ptr<std::map<unsigned int, std::unique_ptr<std::map<const std::string, std::string>>>> CSVDb::get_rows() const
 {
 	auto map_ptr = std::make_unique<std::map<uint, std::unique_ptr<std::map<const std::string, std::string>>>>();
@@ -132,8 +137,10 @@ std::unique_ptr<std::map<unsigned int, std::unique_ptr<std::map<const std::strin
 		{
 			std::getline(file, str, ',');
 			elem_map_ptr->emplace(it, str);	
+			//(*elem_map_ptr)[it] = str;
 		}
 		map_ptr->emplace(id, std::move(elem_map_ptr));
+		//(*map_ptr)[id] = std::move(elem_map_ptr);
 		std::getline(file, str);
 	}
 

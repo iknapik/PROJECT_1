@@ -1,6 +1,11 @@
 #ifndef _ID_MANAGER_H_
 #define _ID_MANAGER_H_
-
+/*
+ID generator that stores used id in a file in following format:
+last_unused_id, (optional)released_id1, (optional)released_id2, ...
+it may not be stable with huge amount of released id;
+start from 1 to unsigned int
+*/
 #include <vector>
 
 namespace school
@@ -17,7 +22,6 @@ public:
 	bool release_id(uint id);
 private:
 	bool save();
-
 };
 }
 
