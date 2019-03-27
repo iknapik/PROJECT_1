@@ -10,6 +10,26 @@
 #include <cassert>
 #include <array>
 #include <cstdio>
+#include <chrono>
+
+
+class Timer
+{
+	std::chrono::time_point<std::chrono::system_clock> start;
+public:
+	Timer()
+	{
+		start = std::chrono::system_clock::now();
+	}
+	void elapsed()
+	{
+		auto now = std::chrono::system_clock::now();
+		auto ticks = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
+		std::cout << "Took: " << ticks / 1000 << "." << ticks - ticks / 1000<< " seconds.\n";
+	}
+
+
+};
 
 using namespace school;
 using namespace cheshire;
@@ -23,15 +43,17 @@ bool operator<(const std::unique_ptr<StudentInfo>& s1, const std::unique_ptr<Stu
 
 int main()
 {
-	bool test_csvdb = false;
+	bool test_csvdb = true;
 	if (test_csvdb)
 	{
 		auto csv = CSVDb<5>("test_db.txt");
+		std::cout << "Start test_csvdb.\n";
+		auto timer = Timer();
 		std::remove("test_db.txt");
 		std::array<std::string, 5> m1{ "103", "Tomek", "Kowalski", "3123123", "Inwałd Zielna 20" };
 		std::array<std::string, 5> m2{ "50", "Tomek", "Kowalski2", "3123123", "Inwałd Zielna 20" };
 		std::array<std::string, 5> m3{ "60", "Tomek", "Kowalski3", "3123123", "Inwałd Zielna 20" };
-		for (int i = 1; i < 100; ++i)
+		for (int i = 1; i < 1000; ++i)
 		{
 			m1[0] = std::to_string(i);
 			csv.add_row(m1);
@@ -45,8 +67,9 @@ int main()
 		{
 			std::cout << (*i)[0] << " " << (*i)[1] << " " << (*i)[2] << " " << (*i)[3] << " " << (*i)[4] << "\n";
 		}
+		timer.elapsed();
 	}
-	bool test_studentdao = true;
+	bool test_studentdao = false;
 	if (test_studentdao)
 	{
 		auto sda = StudentDao();
