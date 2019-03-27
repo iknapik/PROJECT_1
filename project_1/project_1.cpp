@@ -17,9 +17,10 @@ class Timer
 {
 	std::chrono::time_point<std::chrono::system_clock> start;
 public:
-	Timer()
+	Timer(bool start_message = true)
 	{
 		start = std::chrono::system_clock::now();
+		if (start_message) std::cout << "Timer Starts!\n";
 	}
 	void elapsed()
 	{
@@ -45,11 +46,11 @@ int main()
 {
 	bool test_csvdb = true;
 	if (test_csvdb)
-	{
+	{/*
 		auto csv = CSVDb<5>("test_db.txt");
 		std::cout << "Start test_csvdb.\n";
 		auto timer = Timer();
-		std::remove("test_db.txt");
+		
 		std::array<std::string, 5> m1{ "103", "Tomek", "Kowalski", "3123123", "Inwałd Zielna 20" };
 		std::array<std::string, 5> m2{ "50", "Tomek", "Kowalski2", "3123123", "Inwałd Zielna 20" };
 		std::array<std::string, 5> m3{ "60", "Tomek", "Kowalski3", "3123123", "Inwałd Zielna 20" };
@@ -67,34 +68,35 @@ int main()
 		{
 			std::cout << (*i)[0] << " " << (*i)[1] << " " << (*i)[2] << " " << (*i)[3] << " " << (*i)[4] << "\n";
 		}
+		timer.elapsed();*/
+		auto timer = Timer();
+		std::remove("test_db.txt");
+		auto csv = CSVDb("test_db.txt", {"Imie", "Nazwisko", "PESEL", "Miasto", "Adres"});
+		auto m1 = std::map<const std::string, std::string>();
+		m1["Imie"] = "Marek";
+		m1["Nazwisko"] = "Kowalski";
+		m1["PESEL"] = "312312312";
+		m1["Miasto"] = "Inwałd";
+		m1["Adres"] = "Zielna 19";
+		for (int i = 1; i < 1000; ++i)	csv.add_row(i, m1);
+		m1["Imie"] = "Tomek";
+		csv.update_row(90, m1);
+		m1["Imie"] = "Wojtek";
+		csv.update_row(95, m1);
+		m1["Imie"] = "Ala";
+		//csv.update_row(99, m1);
+		//assert("Ala" == csv.get_row(99).second->at("Imie"));
+		assert("Tomek" == csv.get_row(90).second->at("Imie"));
+		assert("Wojtek" == csv.get_row(95).second->at("Imie"));
+		auto rows = csv.get_rows();
+		for (auto& it : *rows)
+		{
+			std::cout << it.first << " " << it.second->at("Imie") << " " << it.second->at("Nazwisko") << "\n";
+		}
 		timer.elapsed();
+		
 	}
 	bool test_studentdao = false;
-	if (test_studentdao)
-	{
-		auto sda = StudentDao();
-		std::remove("students_db.txt");
-		for (int i = 1 ;i < 100; ++i)
-		{
-			auto sinfo1 = StudentInfo("Michal", "Kowalski", "3123213", "Inwałd", "Zielna 19", i);
-			sda.add_student(sinfo1);
-		}
-		auto sinfo1 = StudentInfo("Michal", "Kowalski1", "3123213", "Inwałd", "Zielna 19", 30);
-		auto sinfo2 = StudentInfo("Michal", "Kowalski2", "3123213", "Inwałd", "Zielna 19", 70);
-		auto sinfo3 = StudentInfo("Michal", "Kowalski3", "3123213", "Inwałd", "Zielna 19", 80);
-		sda.update_student(sinfo1);
-		sda.update_student(sinfo2);
-		sda.update_student(sinfo3);
-		sda.remove_student(14);
-		sda.remove_student(20);
-		assert(sinfo1.m_lastname == sda.get_student(30)->m_lastname);
-		assert(sinfo2.m_lastname == sda.get_student(70)->m_lastname);
-		assert(sinfo3.m_lastname == sda.get_student(80)->m_lastname);
-		auto map_ptr = sda.get_students();
-		for (auto &i : *map_ptr)
-		{
-			std::cout << *i.second << "\n";
-		}
-	}
+	
 	return 0;
 }

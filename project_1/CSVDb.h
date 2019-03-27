@@ -1,7 +1,8 @@
 #ifndef _CSVDB_H_
 #define _CSVDB_H_
 
-#include <array>
+#include <map>
+#include <vector>
 #include <string>
 #include <list>
 #include <memory>
@@ -10,19 +11,19 @@
 
 namespace cheshire
 {
-	template<int T_SIZE>
+
 	class CSVDb
 	{
 		typedef unsigned int uint;
-
+		const std::vector<std::string> m_header;
 		const char* m_file_name;
 	public:
-		constexpr explicit CSVDb(const char* filename) : m_file_name(filename){}
-		bool add_row(const std::array<std::string, T_SIZE> data) const;
+		explicit CSVDb(const char* filename, const std::vector<std::string>& header);
+		bool add_row(uint id, const std::map<const std::string, std::string>& data) const;
 		bool remove_row(uint id) const;
-		bool update_row(const std::array<std::string, T_SIZE>& data) const;
-		std::unique_ptr<std::list<std::unique_ptr<std::array<std::string, T_SIZE>>>> get_rows() const;
-		std::array<std::string, T_SIZE> get_row(uint id) const;
+		bool update_row(uint id, const std::map<const std::string, std::string>& data) const;
+		std::unique_ptr<std::map<uint, std::unique_ptr<std::map<const std::string, std::string>>>> get_rows() const;
+		std::pair<unsigned, std::unique_ptr<std::map<const std::string, std::string>>> get_row(uint id) const;
 
 	};
 }

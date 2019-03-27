@@ -8,7 +8,7 @@
 #include <memory>
 #include <map>
 //#include <array>
-
+/*
 const int number_of_student_fields = 6;
 
 namespace school {
@@ -31,5 +31,5 @@ public:
 };
 
 }
-
+*/
 #endif

@@ -31,7 +31,7 @@ class StudentModel
 	
 	
 public:
-	StudentModel(StudentDao* sdao) : m_student_dao(sdao), m_students(m_student_dao->get_students()), m_verify_name("^[A-Z]\\w+\\s?[A-Z]\\w+$"), m_verify_PESEL("^\\d{11}$")
+	StudentModel(StudentDao* sdao) : m_student_dao(sdao), m_students(), m_verify_name("^[A-Z]\\w+\\s?[A-Z]\\w+$"), m_verify_PESEL("^\\d{11}$")
 	{
 
 	}

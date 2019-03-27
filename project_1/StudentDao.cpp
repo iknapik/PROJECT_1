@@ -4,7 +4,7 @@
 #include <fstream>
 #include <string>
 #include <cstdio>
-
+/*
 using namespace school;
 std::array<std::string, number_of_student_fields> StudentDao::convert(const StudentInfo& sinfo) const
 {
@@ -55,3 +55,4 @@ std::unique_ptr<StudentInfo> StudentDao::get_student(unsigned id) const
 {
 	return convert(m_database->get_row(id));
 }
+*/
