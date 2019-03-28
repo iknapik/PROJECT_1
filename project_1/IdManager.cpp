@@ -2,9 +2,9 @@
 #include <fstream>
 #include <sstream>
 
-using namespace school;
+using namespace cheshire;
 
-IdManager::IdManager(const char* filename)
+IdManager::IdManager(const std::string& filename)
 {
 	sfilename = filename;
 	auto file = std::ifstream(sfilename, std::ios::in);
@@ -39,7 +39,7 @@ unsigned int IdManager::get_id()
 bool IdManager::save()
 {
 	auto file = std::ofstream(sfilename, std::ios::trunc | std::ios::out);
-	for (int i = 0; i < id_vector.size(); ++i)
+	for (unsigned int i = 0; i < id_vector.size(); ++i)
 	{
 		file << id_vector[i] << ((i < id_vector.size() - 1) ? " " : "");
 	}

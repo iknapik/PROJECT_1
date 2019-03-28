@@ -26,21 +26,25 @@ CSVDb::CSVDb(const char* filename, const std::vector<std::string>& header) : m_h
 		
 }
 
-bool CSVDb::add_row(uint id, const std::map<const std::string, std::string>& data) const
+bool CSVDb::add_row(uint id, const std::vector<std::string>& data) const
 {
 	if (data.empty()) return false;
 	auto file = std::ofstream(m_file_name, std::ios::app);
 	file << id << ',';
+	auto ptr = data.begin();
+	auto end = data.end();
 	for (auto it : m_header)
 	{
-		file << data.at(it) << ',';
+
+		file << ((ptr != end) ? *(ptr) : "") << ',';
+		if (ptr != end) ++ptr;
 	}	
 	file << '\n';
 	return true;
 }
 
 
-bool CSVDb::remove_row(unsigned id) const
+bool CSVDb::remove_row(unsigned id, bool remove_only_one) const
 {
 	bool removed = false;
 	auto temp = std::ofstream("temp.txt", std::ios::out | std::ios::trunc);
@@ -55,7 +59,12 @@ bool CSVDb::remove_row(unsigned id) const
 		while (std::getline(file, str, ','))	
 		{
 			uint tempid = std::stoul(str);
-			if (tempid == id)
+			if (tempid == id && remove_only_one && !removed)
+			{
+				std::getline(file, str, '\n');
+				removed = true;
+			}
+			else if (tempid == id && !remove_only_one)
 			{
 				std::getline(file, str, '\n');
 				removed = true;
@@ -80,7 +89,7 @@ bool CSVDb::remove_row(unsigned id) const
 }
 
 
-bool CSVDb::update_row(uint id, const std::map<const std::string, std::string>& data) const
+bool CSVDb::update_row(uint id, const std::vector<std::string>& data) const
 {
 	// it always adds at the end of the file, it doesn't sort by id
 	if (data.empty()) return false;
@@ -145,4 +154,20 @@ std::unique_ptr<std::map<unsigned int, std::unique_ptr<std::map<const std::strin
 	}
 
 	return map_ptr;
+}
+
+bool CSVDbID::add_row(const std::vector<std::string>& data) const
+{
+	uint id = m_id_manager->get_id();
+	return CSVDb::add_row(id, data);
+}
+
+bool CSVDbID::remove_row(uint id) const
+{
+	if (CSVDb::remove_row(id))
+	{
+		m_id_manager->release_id(id);
+		return true;
+	}
+	return false;
 }

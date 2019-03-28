@@ -39,6 +39,9 @@
     <ClInclude Include="CSVDb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BasicData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="project_1.cpp">

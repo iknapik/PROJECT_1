@@ -7,17 +7,18 @@ it may not be stable with huge amount of released id;
 start from 1 to unsigned int
 */
 #include <vector>
+#include <string>
 
-namespace school
+namespace cheshire
 {
 
 	class IdManager
 {
 		typedef unsigned int uint;
 		std::vector<uint> id_vector;
-		const char* sfilename = "student_id_db.txt";
+		std::string sfilename;
 public:
-	IdManager(const char* filename);
+	IdManager(const std::string& filename);
 	uint get_id();
 	bool release_id(uint id);
 private:
