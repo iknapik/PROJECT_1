@@ -14,6 +14,8 @@ it stores data as map<ID, DATA>
 DATA itself is a map with KEYS specified in m_header
 very lightweight, doesn't perfom any checks though
 DONT USE: { , \n } in DATA
+
+Added CSVDbID class that works with IdManager to automatically produce and remove unique ids
 */
 
 namespace cheshire

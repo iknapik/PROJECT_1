@@ -15,19 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="StudentDao.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StudentModel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="StudentInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ClassInfo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ClassDao.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MarkInfo.h">
@@ -42,24 +33,18 @@
     <ClInclude Include="BasicData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BaseDao.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DatabaseModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="project_1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="StudentDao.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StudentModel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StudentInfo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ClassInfo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ClassDao.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MarkInfo.cpp">
@@ -69,6 +54,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CSVDb.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DatabaseModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

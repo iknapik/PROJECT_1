@@ -2,7 +2,7 @@
 // i id nauczyciela prowadzącego
 
 // classdao zajmuje się serializacją/deserializacją
-
+// TODO//
 #ifndef CLASSINFO_H_
 #define CLASSINFO_H_
 

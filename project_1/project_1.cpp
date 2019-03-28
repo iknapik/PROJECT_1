@@ -3,8 +3,7 @@
 
 #include <iostream>
 #include "StudentInfo.h"
-#include "StudentDao.h"
-#include "StudentModel.h"
+#include "BaseDao.h"
 #include "IdManager.h"
 #include "CSVDb.h"
 #include "BasicDao.h"
@@ -37,7 +36,7 @@ using namespace cheshire;
 
 int main()
 {
-	bool test_csvdb = false;
+	bool test_csvdb = true;
 	if (test_csvdb)
 	{
 		auto timer = Timer();
@@ -92,13 +91,16 @@ int main()
 		std::remove("students_db.txt");
 		std::remove("id_students_db.txt");
 		auto timer = Timer();
-		auto sdao = StudentDao();
+		auto sdao = BaseDao<StudentInfo>("students_db.txt", school::FIELD_NAMES);
 		auto m1 = StudentInfo("Kamil", "Kowalski", "9819232", "Inwałd", "ZIelan 19");
 		for (int i = 0; i < 1000; ++i)
 		{
-			sdao.add_student(m1);
+			assert(sdao.add_student(m1));
 			m1.m_firstname = "Kamil" + std::to_string(i);
 		}
+		m1.m_firstname = "Wojtek";
+		assert(!sdao.update_student(m1));
+		//assert(sdao.get_student(999)->m_firstname == "Wojtek");
 		auto studs = sdao.get_students();
 		for (auto & pair : *studs)
 		{

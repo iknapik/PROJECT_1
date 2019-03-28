@@ -8,16 +8,20 @@
 #include <map>
 #include "BasicData.h"
 
+//Simple lightweigh class that stores data about students
+//implements BasicData iterface to work with BaseDao
+
 namespace school
 {
-	//using namespace cheshire;
+// make sure to pass this vector to BaseDao constructor
+// or from_map will be throwing out_of_range exceptions
 const std::vector<std::string> FIELD_NAMES{"FIRSTNAME", "LASTNAME", "PESEL", "CITY", "ADDRESS"};
-class StudentDao;
+
 
 class StudentInfo : public cheshire::BasicData
 {
 	typedef unsigned int uint;
-	//friend StudentDao;
+
 
 public:
 	std::string m_firstname;
@@ -44,6 +48,7 @@ public:
 		return out;
 	}	
 
+	//****************** <INTERFACE IMPLEMENTATION> ******************//
 	std::vector<std::string> to_string_vector() const override
 	{
 		std::vector<std::string> vec(5);
@@ -65,7 +70,7 @@ public:
 	}
 	unsigned get_id() const override { return m_id; }
 	bool empty() const { return m_firstname.empty(); }
-
+	//****************** </INTERFACE IMPLEMENTATION> ******************//
 };
 
 

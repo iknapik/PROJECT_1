@@ -152,25 +152,21 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BasicData.h" />
-    <ClInclude Include="ClassDao.h" />
     <ClInclude Include="ClassInfo.h" />
     <ClInclude Include="CSVDb.h" />
     <ClInclude Include="IdManager.h" />
     <ClInclude Include="MarkInfo.h" />
     <ClInclude Include="StudentInfo.h" />
-    <ClInclude Include="StudentDao.h" />
-    <ClInclude Include="StudentModel.h" />
+    <ClInclude Include="BaseDao.h" />
+    <ClInclude Include="DatabaseModel.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ClassDao.cpp" />
     <ClCompile Include="ClassInfo.cpp" />
     <ClCompile Include="CSVDb.cpp" />
     <ClCompile Include="IdManager.cpp" />
     <ClCompile Include="MarkInfo.cpp" />
     <ClCompile Include="project_1.cpp" />
-    <ClCompile Include="StudentInfo.cpp" />
-    <ClCompile Include="StudentDao.cpp" />
-    <ClCompile Include="StudentModel.cpp" />
+    <ClCompile Include="DatabaseModel.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

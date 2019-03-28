@@ -3,7 +3,7 @@
 //obliczanie średnich, dostęp do danych
 // przykładowo aby dodać studenta do bazy używamy
 // student_model_instance.m_student_dao.add_student(...);
-
+/*
 #ifndef STUDENTMODEL_H_
 #define STUDENTMODEL_H_
 
@@ -43,3 +43,4 @@ public:
 }
 
 #endif
+*/
