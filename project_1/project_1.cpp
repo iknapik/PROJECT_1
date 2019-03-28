@@ -6,7 +6,6 @@
 #include "BaseDao.h"
 #include "IdManager.h"
 #include "CSVDb.h"
-#include "BasicDao.h"
 #include <cassert>
 #include <array>
 #include <cstdio>
@@ -48,7 +47,7 @@ int main()
 		{
 			assert(csv.add_row(m1));
 			m1[1] = "Kowal" + std::to_string(i);
-			//csv.remove_row(i);
+			
 		}
 		m1[0] = "Tomek";
 		assert(csv.update_row(90, m1));
@@ -82,9 +81,7 @@ int main()
 	std::cout << sizeof(IdManager) << "IdManager\n";
 	std::cout << sizeof(StudentInfo) << "StudentInfo\n";
 	std::cout << sizeof(BasicData) << "BasicData\n";
-	std::cout << sizeof(BasicDao) << "BasicDao\n";
-	auto ptr = CSVDbID("testname", { "elo", "lola" });
-	bool test_student_dao = true;
+		bool test_student_dao = true;
 	
 	if (test_student_dao)
 	{
@@ -100,7 +97,7 @@ int main()
 		}
 		m1.m_firstname = "Wojtek";
 		assert(!sdao.update_student(m1));
-		//assert(sdao.get_student(999)->m_firstname == "Wojtek");
+
 		auto studs = sdao.get_students();
 		for (auto & pair : *studs)
 		{

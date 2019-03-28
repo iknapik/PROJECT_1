@@ -166,7 +166,6 @@
     <ClCompile Include="IdManager.cpp" />
     <ClCompile Include="MarkInfo.cpp" />
     <ClCompile Include="project_1.cpp" />
-    <ClCompile Include="DatabaseModel.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
