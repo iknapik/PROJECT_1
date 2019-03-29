@@ -2,6 +2,15 @@
 
 using namespace cheshire;
 
+bool CSVDb::is_valid(const std::vector<std::string>& data) const
+{
+	for (auto& field : data)
+	{
+		if (field.find(',') != std::string::npos || field.find('\n') != std::string::npos) return false;
+	}
+	return true;
+}
+
 CSVDb::CSVDb(const char* filename, const std::vector<std::string>& header) : m_header(header), m_file_name(filename)
 {
 	// if file exists and it's not empty do nothing
@@ -29,6 +38,7 @@ CSVDb::CSVDb(const char* filename, const std::vector<std::string>& header) : m_h
 bool CSVDb::add_row(uint id, const std::vector<std::string>& data) const
 {
 	if (data.empty()) return false;
+	if (!is_valid(data)) return false;
 	auto file = std::ofstream(m_file_name, std::ios::app);
 	file << id << ',';
 	auto ptr = data.begin();
@@ -93,6 +103,7 @@ bool CSVDb::update_row(uint id, const std::vector<std::string>& data) const
 {
 	// it always adds at the end of the file, it doesn't sort by id
 	if (data.empty()) return false;
+	if (!is_valid(data)) return false;
 	if (remove_row(id)) return add_row(id, data);
 	return false;
 }
@@ -130,8 +141,11 @@ std::pair<unsigned,std::unique_ptr<std::map<const std::string, std::string>>> CS
 
 
 // 2 secs Faster than array version
-std::unique_ptr<std::map<unsigned int, std::unique_ptr<std::map<const std::string, std::string>>>> CSVDb::get_rows() const
+std::unique_ptr<std::map<unsigned int, std::unique_ptr<std::map<const std::string, std::string>>>> CSVDb::get_rows(const std::set<uint>& ids) const
 {
+	bool get_by_ids = false;
+	if (!ids.empty()) get_by_ids = true;
+
 	auto map_ptr = std::make_unique<std::map<uint, std::unique_ptr<std::map<const std::string, std::string>>>>();
 	auto file = std::ifstream(m_file_name, std::ios::in);
 	
@@ -141,25 +155,28 @@ std::unique_ptr<std::map<unsigned int, std::unique_ptr<std::map<const std::strin
 	while (std::getline(file, str, ','))
 	{
 		uint id = std::stoul(str);
-		auto elem_map_ptr = std::make_unique<std::map<const std::string, std::string>>();
-		for (auto& it : m_header)
+		if (!get_by_ids || ids.find(id) != ids.end())
 		{
-			std::getline(file, str, ',');
-			elem_map_ptr->emplace(it, str);	
-			//(*elem_map_ptr)[it] = str;
+			auto elem_map_ptr = std::make_unique<std::map<const std::string, std::string>>();
+			for (auto& it : m_header)
+			{
+				std::getline(file, str, ',');
+				elem_map_ptr->emplace(it, str);
+				//(*elem_map_ptr)[it] = str;
+			}
+			map_ptr->emplace(id, std::move(elem_map_ptr));
+			//(*map_ptr)[id] = std::move(elem_map_ptr);
 		}
-		map_ptr->emplace(id, std::move(elem_map_ptr));
-		//(*map_ptr)[id] = std::move(elem_map_ptr);
 		std::getline(file, str);
 	}
 
 	return map_ptr;
 }
 
-bool CSVDbID::add_row(const std::vector<std::string>& data) const
+unsigned CSVDbID::add_row(const std::vector<std::string>& data) const
 {
 	uint id = m_id_manager->get_id();
-	return CSVDb::add_row(id, data);
+	if (CSVDb::add_row(id, data)) return id; else return 0;
 }
 
 bool CSVDbID::remove_row(uint id) const

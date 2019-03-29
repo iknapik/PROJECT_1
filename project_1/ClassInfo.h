@@ -9,11 +9,14 @@ namespace school {
 	{
 		typedef unsigned uint;
 		uint m_class_id = 0;
+	public:
 		uint m_teacher_id;
 		std::set<uint> m_student_ids;
-	public:
+	
 		explicit ClassInfo() {}
 		explicit ClassInfo(uint teacher_id, const std::set<uint>& set) : m_teacher_id(teacher_id), m_student_ids(set) {}
+
+
 		virtual std::vector<std::string> to_string_vector() const override
 		{
 			// size + 1 for teacher id

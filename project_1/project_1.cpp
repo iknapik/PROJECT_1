@@ -79,7 +79,7 @@ int main()
 	std::cout << sizeof(StudentInfo) << "StudentInfo\n";
 	std::cout << sizeof(BasicData) << "BasicData\n";
 		
-	bool test_student_dao = false;
+	bool test_student_dao = true;
 	
 	if (test_student_dao)
 	{
@@ -128,7 +128,7 @@ int main()
 			std::cout << "Enter Student Name: \n";
 			std::string str;
 			std::getline(std::cin, str);
-			for (auto& i : model.find_students(str))
+			for (auto& i : model.get_students_by_ids({100, 200, 300, 7657, 2131, 4091}))
 			{
 				std::cout << "\n" << i;
 			}

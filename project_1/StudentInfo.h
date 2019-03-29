@@ -30,14 +30,13 @@ public:
 	std::string m_city;
 	std::string m_address;
 private:
-	uint m_id;
+	uint m_id = 0;
 public:
 	StudentInfo() {}
-	StudentInfo(const std::string& firstname, const std::string& lastname, const std::string& PESEL, const std::string& city, const std::string& address, uint id = 0) :
+	StudentInfo(const std::string& firstname, const std::string& lastname, const std::string& PESEL, const std::string& city, const std::string& address) :
 		m_firstname(firstname),
 		m_lastname(lastname),
-		m_PESEL(PESEL),
-		m_id(id),
+		m_PESEL(PESEL),	
 		m_city(city),
 		m_address(address){}		
 	//uint get_id() const { return m_id; }
@@ -72,6 +71,7 @@ public:
 	}
 	unsigned get_id() const override { return m_id; }
 	bool empty() const { return m_firstname.empty(); }
+	void set_id(uint id) { m_id = id; }
 	//****************** </INTERFACE IMPLEMENTATION> ******************//
 };
 

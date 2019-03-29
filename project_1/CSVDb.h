@@ -3,6 +3,7 @@
 
 #include <map>
 #include <vector>
+#include <set>
 #include <string>
 #include <memory>
 #include <fstream>
@@ -28,16 +29,16 @@ namespace cheshire
 		// for storing KEYS
 		const std::vector<std::string> m_header;
 		const char* m_file_name;
+		bool is_valid(const std::vector<std::string>& data) const;
 	public:
 		explicit CSVDb(const char* filename, const std::vector<std::string>& header);
 		bool add_row(uint id, const std::vector<std::string>& data) const;
 		bool remove_row(uint id, bool remove_only_one = false) const;
 		bool update_row(uint id, const std::vector<std::string>& data) const;
 		// returns a pair of (ID, DATA)
-		std::unique_ptr<std::map<uint, std::unique_ptr<std::map<const std::string, std::string>>>> get_rows() const;
+		std::unique_ptr<std::map<uint, std::unique_ptr<std::map<const std::string, std::string>>>> get_rows(const std::set<uint>& ids = {}) const;
 		// returns map of (ID, map of (KEYS, DATA))
 		std::pair<unsigned, std::unique_ptr<std::map<const std::string, std::string>>> get_row(uint id) const;
-
 	};
 
 	class CSVDbID : public CSVDb
@@ -47,7 +48,7 @@ namespace cheshire
 		std::unique_ptr<IdManager> m_id_manager;
 	public:
 		explicit CSVDbID(const char* filename, const std::vector<std::string>& header) : CSVDb(filename, header), m_id_manager(std::make_unique<IdManager>("id_" + std::string(filename))) {}
-		bool add_row(const std::vector<std::string>& data) const;
+		uint add_row(const std::vector<std::string>& data) const;
 		bool remove_row(uint id) const;
 	};
 }
