@@ -2,10 +2,7 @@
 //
 
 #include <iostream>
-#include "StudentInfo.h"
-#include "BaseDao.h"
-#include "IdManager.h"
-#include "CSVDb.h"
+#include "DatabaseModel.h"
 #include <cassert>
 #include <array>
 #include <cstdio>
@@ -35,7 +32,7 @@ using namespace cheshire;
 
 int main()
 {
-	bool test_csvdb = true;
+	bool test_csvdb = false;
 	if (test_csvdb)
 	{
 		auto timer = Timer();
@@ -81,30 +78,61 @@ int main()
 	std::cout << sizeof(IdManager) << "IdManager\n";
 	std::cout << sizeof(StudentInfo) << "StudentInfo\n";
 	std::cout << sizeof(BasicData) << "BasicData\n";
-		bool test_student_dao = true;
+		
+	bool test_student_dao = false;
 	
 	if (test_student_dao)
 	{
 		std::remove("students_db.txt");
 		std::remove("id_students_db.txt");
 		auto timer = Timer();
-		auto sdao = BaseDao<StudentInfo>("students_db.txt", school::FIELD_NAMES);
+		auto sdao = BaseDao<StudentInfo>("students_db.txt", school::STUDENT_FIELD_NAMES);
 		auto m1 = StudentInfo("Kamil", "Kowalski", "9819232", "Inwałd", "ZIelan 19");
 		for (int i = 0; i < 1000; ++i)
 		{
-			assert(sdao.add_student(m1));
+			assert(sdao.add_row(m1));
 			m1.m_firstname = "Kamil" + std::to_string(i);
 		}
 		m1.m_firstname = "Wojtek";
-		assert(!sdao.update_student(m1));
+		assert(!sdao.update_row(m1));
 
-		auto studs = sdao.get_students();
+		auto studs = sdao.get_rows();
 		for (auto & pair : *studs)
 		{
 			std::cout << *pair.second << "\n";
 		}
 		timer.elapsed();
 	}
+
+	bool test_class_dao = false;
+	if (test_class_dao)
+	{
+		std::remove("classes_db.txt");
+		std::remove("id_classes_db.txt");
+		auto timer = Timer();
+		auto sdao = BaseDao<ClassInfo>("classes_db.txt", school::CLASS_FIELD_NAMES);
+		auto m1 = ClassInfo(3, { 1, 2, 3, 4, 5, 6, 7 });
+		sdao.add_row(m1);
+		auto m1_back = sdao.get_row(1);
+		std::cout << *m1_back;
+	}
 	
+	bool test_model = true;
+	{
+		if (test_model)
+		{
+			Timer timer{};
+			auto model = DatabaseModel();
+			std::cout << "Database Initialized! \n";
+			timer.elapsed();
+			std::cout << "Enter Student Name: \n";
+			std::string str;
+			std::getline(std::cin, str);
+			for (auto& i : model.find_students(str))
+			{
+				std::cout << "\n" << i;
+			}
+		}
+	}
 	return 0;
 }

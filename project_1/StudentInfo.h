@@ -15,7 +15,7 @@ namespace school
 {
 // make sure to pass this vector to BaseDao constructor
 // or from_map will be throwing out_of_range exceptions
-const std::vector<std::string> FIELD_NAMES{"FIRSTNAME", "LASTNAME", "PESEL", "CITY", "ADDRESS"};
+const std::vector<std::string> STUDENT_FIELD_NAMES{"FIRSTNAME", "LASTNAME", "PESEL", "CITY", "ADDRESS"};
 
 
 class StudentInfo : public cheshire::BasicData
@@ -61,12 +61,14 @@ public:
 	};
 	void from_map(unsigned id, const std::unique_ptr<std::map<const std::string, std::string>>& map) override
 	{
+		if (map->empty()) return;
+
 		m_id = id;
-		m_firstname = map->at(school::FIELD_NAMES[0]);
-		m_lastname = map->at(school::FIELD_NAMES[1]);
-		m_PESEL = map->at(school::FIELD_NAMES[2]);
-		m_city = map->at(school::FIELD_NAMES[3]);
-		m_address = map->at(school::FIELD_NAMES[4]);
+		m_firstname = map->at(school::STUDENT_FIELD_NAMES[0]);
+		m_lastname = map->at(school::STUDENT_FIELD_NAMES[1]);
+		m_PESEL = map->at(school::STUDENT_FIELD_NAMES[2]);
+		m_city = map->at(school::STUDENT_FIELD_NAMES[3]);
+		m_address = map->at(school::STUDENT_FIELD_NAMES[4]);
 	}
 	unsigned get_id() const override { return m_id; }
 	bool empty() const { return m_firstname.empty(); }

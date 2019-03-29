@@ -22,23 +22,23 @@ class BaseDao {
 public:
 	explicit BaseDao(const char* filename, const std::vector<std::string>& fieldnames) : m_file_name(filename), m_database(std::make_unique<cheshire::CSVDbID>(filename, fieldnames)) {}
 	// redirects to CSVDb using BasicData interface
-	bool add_student(const T& student) const
+	bool add_row(const T& student) const
 	{
 		return m_database->add_row(student.to_string_vector());
 	}
 	// redirects to CSVDb using BasicData interface
-	bool remove_student(uint id) const
+	bool remove_row(uint id) const
 	{
 		return m_database->remove_row(id);
 	}
 	// redirects to CSVDb using BasicData interface
-	bool update_student(const T& student) const
+	bool update_row(const T& student) const
 	{
 		return m_database->update_row(student.get_id(), student.to_string_vector());
 	}
 	// converts from map returned by CSVDb to Map of T
 	// that pointer management though!
-	std::unique_ptr<std::map<uint, std::unique_ptr<T>>> get_students() const
+	std::unique_ptr<std::map<uint, std::unique_ptr<T>>> get_rows() const
 	{
 		auto out_ptr = std::make_unique<std::map<uint, std::unique_ptr<T>>>();
 		auto rows_ptr = m_database->get_rows();
@@ -52,7 +52,7 @@ public:
 		return out_ptr;
 	}
 
-	std::unique_ptr<T> get_student(uint id) const
+	std::unique_ptr<T> get_row(uint id) const
 	{
 		auto pair = m_database->get_row(id);
 		auto ptr = std::make_unique<T>();

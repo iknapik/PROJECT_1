@@ -161,8 +161,8 @@
     <ClInclude Include="DatabaseModel.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ClassInfo.cpp" />
     <ClCompile Include="CSVDb.cpp" />
+    <ClCompile Include="DatabaseModel.cpp" />
     <ClCompile Include="IdManager.cpp" />
     <ClCompile Include="MarkInfo.cpp" />
     <ClCompile Include="project_1.cpp" />
