@@ -22,6 +22,7 @@ public:
 	// create keys in info class, then use same keys when creating database
 	virtual void from_map(unsigned id, const std::unique_ptr<std::map<const std::string, std::string>>&) = 0;
 	virtual unsigned get_id() const = 0;
+	virtual void set_id(unsigned id) = 0;
 };
 
 }

@@ -21,24 +21,54 @@ namespace school {
 	class DatabaseModel
 	{
 		typedef unsigned uint;
-
+		std::unique_ptr<BaseDao<ClassInfo>> m_classdao;
 		std::unique_ptr<BaseDao<StudentInfo>> m_sdao;
 		std::unique_ptr<std::vector<std::string>> m_slookup;
 		std::unique_ptr<std::map<uint, std::unique_ptr<StudentInfo>>> m_students_ptr;
+		std::unique_ptr<std::map<uint, std::unique_ptr<ClassInfo>>> m_classes_ptr;
 
 	public:
 		explicit DatabaseModel();
+		
+		//it searches in all STUDENT_FIELD_NAMES
 		std::list<StudentInfo> find_students(const std::string& str) const;
-		bool add_student(const StudentInfo& student);
-		bool remove_student(uint id);
-		bool update_student(const StudentInfo& student);
-		StudentInfo get_student_by_id(uint id) const;
-		std::list<StudentInfo> get_students_by_ids(const std::set<uint>& ids) const;
-		std::list<StudentInfo> get_students_by_class(const std::string& str) const;
 
+		//silently ignores ids that are not in the database, worst case returns empty list
+		std::list<StudentInfo> get_students_by_ids(const std::set<uint>& ids) const;
+		//std::list<StudentInfo> get_students_by_class(const std::string& str) const;
+
+		//with update/add just pass in Info class it will know what to do
+		template <class Info>
+		bool update(const Info& info);
+		template <class Info>
+		bool add(Info& info);
+		template <class Info>
+
+		//with remove and get_by_id you have to explicitly select what template to use
+		bool remove(uint id);
+		template <class Info>
+		Info get_by_id(uint id) const;
+		
 	private:
 		std::list<unsigned> find_students_helper(const std::string& str) const;
 		unsigned id_from_lookup_elem(const std::string& str) const;
+		//templated getter for table pointers
+		template <class Info>
+		std::map<uint, std::unique_ptr<Info>>* get_ptr() const;
+		template <>
+		std::map<uint, std::unique_ptr<StudentInfo>>* get_ptr() const { return m_students_ptr.get(); }
+		template <>
+		std::map<uint, std::unique_ptr<ClassInfo>>* get_ptr() const { return m_classes_ptr.get(); }
+		//templated getter for db pointers
+		template <class Info>
+		BaseDao<Info>* get_dao_ptr() const;
+		template <>
+		BaseDao<ClassInfo>* get_dao_ptr() const { return m_classdao.get(); }
+		template <>
+		BaseDao<StudentInfo>* get_dao_ptr() const { return m_sdao.get(); }
+
+		
+		
 	};
 
 

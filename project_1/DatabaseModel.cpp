@@ -6,7 +6,9 @@ using namespace school;
 
 DatabaseModel::DatabaseModel()
 {
+	m_classdao = std::make_unique<BaseDao<ClassInfo>>("classes_db.txt", CLASS_FIELD_NAMES);
 	m_sdao = std::make_unique<BaseDao<StudentInfo>>("students_db.txt", STUDENT_FIELD_NAMES);
+	m_classes_ptr = m_classdao->get_rows();
 	m_students_ptr = m_sdao->get_rows();
 	m_slookup = std::make_unique<std::vector<std::string>>();
 
@@ -28,6 +30,58 @@ DatabaseModel::DatabaseModel()
 		m_slookup->push_back(stream.str());
 	}
 }
+
+
+template <class Info>
+bool DatabaseModel::add(Info& info)
+{
+	uint id = get_dao_ptr<Info>()->add_row(info);
+	if (id != 0)
+	{
+		info.set_id(id);
+		auto obj = std::make_unique<Info>();
+		*obj = info;
+		get_ptr<Info>()->emplace(id, std::move(obj));
+		return true;
+	}
+	return false;
+}
+template bool DatabaseModel::add<StudentInfo>(StudentInfo& info);
+template bool DatabaseModel::add<ClassInfo>(ClassInfo& info);
+
+template <class Info>
+bool DatabaseModel::update(const Info& info)
+{
+	if (get_dao_ptr<Info>()->update_row(info))
+	{
+		*(get_ptr<Info>()->at(info.get_id())) = info;
+		return true;
+	}
+	return false;
+}
+template bool DatabaseModel::update<StudentInfo>(const StudentInfo& info);
+template bool DatabaseModel::update<ClassInfo>(const ClassInfo& info);
+
+template <class Info>
+bool DatabaseModel::remove(unsigned id)
+{
+	if (get_dao_ptr<Info>()->remove_row(id))
+	{
+		get_ptr<Info>()->erase(id);
+		return true;
+	}
+	return false;
+}
+template bool DatabaseModel::remove<StudentInfo>(unsigned id);
+template bool DatabaseModel::remove<ClassInfo>(unsigned id);
+
+template <class Info>
+Info DatabaseModel::get_by_id(unsigned id) const
+{	
+		return *(get_ptr<Info>()->at(id));
+}
+template StudentInfo DatabaseModel::get_by_id(unsigned id) const;
+template ClassInfo DatabaseModel::get_by_id(unsigned id) const;
 
 std::list<StudentInfo> DatabaseModel::find_students(const std::string& str) const
 {
@@ -105,51 +159,4 @@ std::list<StudentInfo> DatabaseModel::get_students_by_ids(const std::set<uint>& 
 	}
 	return list;
 	
-}
-
-
-bool DatabaseModel::add_student(const StudentInfo& student)
-{ 
-	uint id = m_sdao->add_row(student);
-	if (id != 0) 
-	{
-		auto stud = std::make_unique<StudentInfo>();
-		*stud = student;
-		stud->set_id(id);
-		m_students_ptr->emplace(id, std::move(stud));
-		return true;
-	}
-	return false;
-}
-
-bool DatabaseModel::remove_student(unsigned id)
-{
-	if (m_sdao->remove_row(id)) 
-	{ 
-		m_students_ptr->erase(id); 
-		return true;
-	}
-	return false;
-}
-
-bool DatabaseModel::update_student(const StudentInfo& student)
-{
-	if (m_sdao->update_row(student))
-	{
-		*(m_students_ptr->at(student.get_id())) = student;
-		return true;
-	}
-	return false;
-}
-
-StudentInfo DatabaseModel::get_student_by_id(uint id) const
-{
-	try
-	{
-		return *(m_students_ptr->at(id));
-	}
-	catch (const std::out_of_range& err) 
-	{
-		return StudentInfo();
-	}
 }

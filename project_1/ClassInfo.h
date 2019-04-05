@@ -3,56 +3,40 @@
 #include <set>
 
 namespace school {
-	const std::vector<std::string> CLASS_FIELD_NAMES{ "TEACHER_ID", "STUDENT_IDS" };
+	const std::vector<std::string> CLASS_FIELD_NAMES{ "CLASS_NAME", "SEMESTER" };
 
 	class ClassInfo : public cheshire::BasicData
 	{
 		typedef unsigned uint;
 		uint m_class_id = 0;
 	public:
-		uint m_teacher_id;
-		std::set<uint> m_student_ids;
+		std::string m_name;		
+		short m_semester;	
 	
-		explicit ClassInfo() {}
-		explicit ClassInfo(uint teacher_id, const std::set<uint>& set) : m_teacher_id(teacher_id), m_student_ids(set) {}
+		ClassInfo() {}
+		ClassInfo(const std::string& class_name, short semester) : m_name(class_name), m_semester(semester) {}
 
-
-		virtual std::vector<std::string> to_string_vector() const override
+		void set_id(uint id) override { m_class_id = id; }
+		std::vector<std::string> to_string_vector() const override
 		{
 			// size + 1 for teacher id
 			std::vector<std::string> vec(2);
-			vec[0] = std::to_string(m_teacher_id);
-			auto stream = std::ostringstream();
-			for (auto &i : m_student_ids)
-			{
-				stream << i << " ";
-			}
-			vec[1] = stream.str();
+			vec[0] = m_name;			
+			vec[1] = std::to_string(m_semester);
 			return vec;
 		}
-		virtual void from_map(unsigned id, const std::unique_ptr<std::map<const std::string, std::string>>& map_ptr) override
+		void from_map(unsigned id, const std::unique_ptr<std::map<const std::string, std::string>>& map_ptr) override
 		{
 			m_class_id = id;
-			auto stream = std::istringstream(map_ptr->at(school::CLASS_FIELD_NAMES[1]));
-
-			std::string str;
-			stream >> str;
-			m_teacher_id = std::stoul(map_ptr->at(school::CLASS_FIELD_NAMES[0]));
-
-			while (stream >> str)
-			{
-				m_student_ids.insert(std::stoul(str));
-			}
+			m_name = map_ptr->at(CLASS_FIELD_NAMES[0]);
+			m_semester = std::stoi(map_ptr->at(CLASS_FIELD_NAMES[1]));
+			
 		}
-		virtual unsigned get_id() const override { return m_class_id; }
+		unsigned get_id() const override { return m_class_id; }
 
 		friend std::ostream& operator<<(std::ostream& out, const ClassInfo& cla)
 		{
-			std::cout << "Class ID: " << cla.m_class_id << ", teacher ID: " << cla.m_teacher_id << " student ids: ";
-			for (auto& i : cla.m_student_ids)
-			{
-				std::cout << i << " ";
-			}
+			std::cout << "Class ID: " << cla.m_class_id << ", name: " << cla.m_name << " semester: " << cla.m_semester;			
 			return out;
 		}
 	};

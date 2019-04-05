@@ -32,6 +32,7 @@ CSVDb::CSVDb(const char* filename, const std::vector<std::string>& header) : m_h
 		}
 		file << "\n";
 	}
+
 		
 }
 
