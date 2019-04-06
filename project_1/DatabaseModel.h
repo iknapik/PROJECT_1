@@ -1,12 +1,8 @@
-//główna klasa do dostępu do bazy
-//cała logika będzie tutaj
-//obliczanie średnich, dostęp do danych
-// przykładowo aby dodać studenta do bazy używamy
-// student_model_instance.m_student_dao.add_student(...);
 
 #ifndef DATABASETMODEL_H_
 #define DATABASETMODEL_H_
 
+#include "MarkInfo.h"
 #include "StudentInfo.h"
 #include "BaseDao.h"
 #include "ClassInfo.h"
@@ -25,12 +21,14 @@ namespace school {
 		std::unique_ptr<BaseDao<ClassInfo>> m_classdao;
 		std::unique_ptr<BaseDao<StudentInfo>> m_sdao;
 		std::unique_ptr<BaseDao<ProfessorInfo>> m_profdao;
+		std::unique_ptr<BaseDao<MarkInfo>> m_markdao;
 
 		std::unique_ptr<std::vector<std::string>> m_slookup;
 
 		std::unique_ptr<std::map<uint, std::unique_ptr<StudentInfo>>> m_students_ptr;
 		std::unique_ptr<std::map<uint, std::unique_ptr<ClassInfo>>> m_classes_ptr;
 		std::unique_ptr<std::map<uint, std::unique_ptr<ProfessorInfo>>> m_professors_ptr;
+		std::unique_ptr<std::map<uint, std::unique_ptr<MarkInfo>>> m_marks_ptr;
 
 	public:
 		explicit DatabaseModel();
@@ -40,7 +38,7 @@ namespace school {
 
 		//silently ignores ids that are not in the database, worst case returns empty list
 		std::list<StudentInfo> get_students_by_ids(const std::set<uint>& ids) const;
-		//std::list<StudentInfo> get_students_by_class(const std::string& str) const;
+		std::list<StudentInfo> get_students_by_class(const std::string& str) const;
 
 		//with update/add just pass in Info class it will know what to do
 		template <class Info>
@@ -65,12 +63,14 @@ namespace school {
 		//templated getter for db pointers
 		template <class Info>
 		BaseDao<Info>* get_dao_ptr() const;
-
-
-
-
 		
-		
+		std::string to_lower(const std::string& str) const
+		{
+			std::string temp{str};
+			for (auto& chr : temp)
+				chr = tolower(chr);
+			return temp;
+		}
 	};
 
 

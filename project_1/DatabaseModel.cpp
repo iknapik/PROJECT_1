@@ -9,6 +9,9 @@ DatabaseModel::DatabaseModel()
 	m_classdao = std::make_unique<BaseDao<ClassInfo>>("classes_db.txt", CLASS_FIELD_NAMES);
 	m_sdao = std::make_unique<BaseDao<StudentInfo>>("students_db.txt", STUDENT_FIELD_NAMES);
 	m_profdao = std::make_unique<BaseDao<ProfessorInfo>>("professors_db.txt", PROFESSOR_FIELD_NAMES);
+	m_markdao = std::make_unique<BaseDao<MarkInfo>>("marks_db.txt", MARK_FIELD_NAMES);
+
+	m_marks_ptr = m_markdao->get_rows();
 	m_professors_ptr = m_profdao->get_rows();
 	m_classes_ptr = m_classdao->get_rows();
 	m_students_ptr = m_sdao->get_rows();
@@ -22,15 +25,11 @@ DatabaseModel::DatabaseModel()
 
 		for (auto& i : vec)
 		{
-			for (auto &chr : i)
-			{
-				chr = tolower(chr);
-			}
-			stream << i << " ";
+			stream << to_lower(i) << " ";
 		}
 		try
 		{
-			stream << m_classes_ptr->at(pair.second->m_class_id)->m_name << " ";
+			stream << to_lower(m_classes_ptr->at(pair.second->m_class_id)->m_name) << " ";
 		}
 		catch(const std::out_of_range& err){stream << "unassigned ";}
 		stream << "--id=" << pair.first;
@@ -46,11 +45,15 @@ std::map<uint, std::unique_ptr<ClassInfo>>* DatabaseModel::get_ptr() const { ret
 template <>
 std::map<uint, std::unique_ptr<ProfessorInfo>>* DatabaseModel::get_ptr() const { return m_professors_ptr.get(); }
 template <>
+std::map<uint, std::unique_ptr<MarkInfo>>* DatabaseModel::get_ptr() const { return m_marks_ptr.get(); }
+template <>
 BaseDao<ClassInfo>* DatabaseModel::get_dao_ptr() const { return m_classdao.get(); }
 template <>
 BaseDao<StudentInfo>* DatabaseModel::get_dao_ptr() const { return m_sdao.get(); }
 template <>
 BaseDao<ProfessorInfo>* DatabaseModel::get_dao_ptr() const { return m_profdao.get(); }
+template <>
+BaseDao<MarkInfo>* DatabaseModel::get_dao_ptr() const { return m_markdao.get(); }
 
 template <class Info>
 bool DatabaseModel::add(Info& info)
@@ -66,9 +69,10 @@ bool DatabaseModel::add(Info& info)
 	}
 	return false;
 }
-template bool DatabaseModel::add<StudentInfo>(StudentInfo& info);
-template bool DatabaseModel::add<ClassInfo>(ClassInfo& info);
-template bool DatabaseModel::add<ProfessorInfo>(ProfessorInfo& info);
+template bool DatabaseModel::add(StudentInfo& info);
+template bool DatabaseModel::add(ClassInfo& info);
+template bool DatabaseModel::add(ProfessorInfo& info);
+template bool DatabaseModel::add(MarkInfo& info);
 
 template <class Info>
 bool DatabaseModel::update(const Info& info)
@@ -143,11 +147,8 @@ std::list<StudentInfo> DatabaseModel::find_students(const std::string& str) cons
 
 std::list<unsigned> DatabaseModel::find_students_helper(const std::string& str) const
 {
-	std::string str_lower{""};
-	for (auto &i : str)
-	{
-		str_lower += tolower(i);
-	}
+	std::string str_lower = to_lower(str);
+
 	auto list = std::list<unsigned>();
 
 	for (auto& elem : *m_slookup)
@@ -183,4 +184,28 @@ std::list<StudentInfo> DatabaseModel::get_students_by_ids(const std::set<uint>& 
 	}
 	return list;
 	
+}
+
+std::list<StudentInfo> DatabaseModel::get_students_by_class(const std::string& str) const
+{
+	std::list<StudentInfo> list{};
+	if (str.empty()) return list;
+	std::string str_lower = to_lower(str);
+	unsigned class_id = 0;
+	for (auto& pair : *m_classes_ptr)
+	{
+		if (str_lower == pair.second->m_name)
+		{
+			class_id = pair.first;
+			break;
+		}
+	}
+	if (class_id)
+	{
+		for (auto& pair : *m_students_ptr)
+		{
+			if (pair.second->m_class_id == class_id) list.push_back(*(pair.second));
+		}
+	}
+	return list;
 }

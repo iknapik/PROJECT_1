@@ -10,7 +10,7 @@ const std::vector<std::string> PROFESSOR_FIELD_NAMES{"FIRSTNAME", "LASTNAME", "T
 class ProfessorInfo : public cheshire::BasicData
 {
 	typedef unsigned uint;
-	uint m_id;
+	uint m_id = 0;
 public:
 	std::string m_first_name;
 	std::string m_last_name;

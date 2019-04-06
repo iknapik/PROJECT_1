@@ -33,21 +33,32 @@ using namespace cheshire;
 
 int main()
 {
+	std::remove("students_db.txt");
+	std::remove("id_students_db.txt");
+	Timer timer{};
 	DatabaseModel db{};
 	StudentInfo stud1{"Michal", "Kowalski", "9123819", "Wadowice", "Wiejska 3", 1};
 	ClassInfo class1{"16i", 3};
 	ProfessorInfo prof1{"Tomasz", "Wozniak", "Mgr", {"MD", "PE"}};
-	db.add(stud1);
-	db.add(class1);
-	db.add(prof1);
-	std::cout << db.get_by_id<ProfessorInfo>(1);
-	//std::cout << stud1 << " " << db.get_by_id<ClassInfo>(stud1.get_class_id());
-	std::string str;
-	std::getline(std::cin, str);
-	for (auto& student : db.find_students(str))
+	MarkInfo mark1{4, MARK::_3, "04-01-2019", SUBJECT::MD, 3};
+	//db.add(mark1);
+	//db.add(stud1);
+	//db.add(class1);
+	//db.add(prof1);
+
+	for (int i = 1; i < 1000; ++i)
 	{
-		std::cout << student << "\n";
+		db.add(stud1);
+		stud1.m_firstname = "Michal" + std::to_string(i);
+		stud1.m_class_id = i % 3;
 	}
 
+	std::string str = "16i";
+	//std::getline(std::cin, str);
+	for (auto &stud : db.get_students_by_class(str))
+	{
+		std::cout << stud << "\n";
+	}
+	timer.elapsed();
 	return 0;
 }
