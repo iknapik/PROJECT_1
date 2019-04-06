@@ -1,6 +1,7 @@
 #include "BasicData.h"
 #include <sstream>
 #include <set>
+#include <iostream>
 
 namespace school {
 	const std::vector<std::string> CLASS_FIELD_NAMES{ "CLASS_NAME", "SEMESTER" };

@@ -43,7 +43,7 @@ public:
 		m_class_id(class_id)
 	{}
 	bool empty() const { return m_firstname.empty(); }
-	void set_id(uint id) override { m_id = id; }
+
 	unsigned get_class_id() const { return m_class_id; }
 	friend std::ostream& operator<<(std::ostream& out, const StudentInfo& student)
 	{
@@ -53,6 +53,7 @@ public:
 	}	
 
 	//****************** <INTERFACE IMPLEMENTATION> ******************//
+	void set_id(uint id) override { m_id = id; }
 	std::vector<std::string> to_string_vector() const override
 	{
 		std::vector<std::string> vec(6);

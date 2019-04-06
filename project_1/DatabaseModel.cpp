@@ -8,6 +8,8 @@ DatabaseModel::DatabaseModel()
 {
 	m_classdao = std::make_unique<BaseDao<ClassInfo>>("classes_db.txt", CLASS_FIELD_NAMES);
 	m_sdao = std::make_unique<BaseDao<StudentInfo>>("students_db.txt", STUDENT_FIELD_NAMES);
+	m_profdao = std::make_unique<BaseDao<ProfessorInfo>>("professors_db.txt", PROFESSOR_FIELD_NAMES);
+	m_professors_ptr = m_profdao->get_rows();
 	m_classes_ptr = m_classdao->get_rows();
 	m_students_ptr = m_sdao->get_rows();
 	m_slookup = std::make_unique<std::vector<std::string>>();
@@ -26,62 +28,84 @@ DatabaseModel::DatabaseModel()
 			}
 			stream << i << " ";
 		}
+		try
+		{
+			stream << m_classes_ptr->at(pair.second->m_class_id)->m_name << " ";
+		}
+		catch(const std::out_of_range& err){stream << "unassigned ";}
 		stream << "--id=" << pair.first;
 		m_slookup->push_back(stream.str());
 	}
 }
 
+// getters for add/remove/update //
+template <>
+std::map<uint, std::unique_ptr<StudentInfo>>* DatabaseModel::get_ptr(StudentInfo* i) const { return m_students_ptr.get(); }
+template <>
+std::map<uint, std::unique_ptr<ClassInfo>>* DatabaseModel::get_ptr(ClassInfo* i) const { return m_classes_ptr.get(); }
+template <>
+std::map<uint, std::unique_ptr<ProfessorInfo>>* DatabaseModel::get_ptr(ProfessorInfo* i) const { return m_professors_ptr.get(); }
+template <>
+BaseDao<ClassInfo>* DatabaseModel::get_dao_ptr(ClassInfo* i) const { return m_classdao.get(); }
+template <>
+BaseDao<StudentInfo>* DatabaseModel::get_dao_ptr(StudentInfo* i) const { return m_sdao.get(); }
+template <>
+BaseDao<ProfessorInfo>* DatabaseModel::get_dao_ptr(ProfessorInfo* i) const { return m_profdao.get(); }
 
 template <class Info>
 bool DatabaseModel::add(Info& info)
 {
-	uint id = get_dao_ptr<Info>()->add_row(info);
+	uint id = get_dao_ptr<Info>(nullptr)->add_row(info);
 	if (id != 0)
 	{
 		info.set_id(id);
 		auto obj = std::make_unique<Info>();
 		*obj = info;
-		get_ptr<Info>()->emplace(id, std::move(obj));
+		get_ptr<Info>(nullptr)->emplace(id, std::move(obj));
 		return true;
 	}
 	return false;
 }
 template bool DatabaseModel::add<StudentInfo>(StudentInfo& info);
 template bool DatabaseModel::add<ClassInfo>(ClassInfo& info);
+template bool DatabaseModel::add<ProfessorInfo>(ProfessorInfo& info);
 
 template <class Info>
 bool DatabaseModel::update(const Info& info)
 {
-	if (get_dao_ptr<Info>()->update_row(info))
+	if (get_dao_ptr<Info>(nullptr)->update_row(info))
 	{
-		*(get_ptr<Info>()->at(info.get_id())) = info;
+		*(get_ptr<Info>(nullptr)->at(info.get_id())) = info;
 		return true;
 	}
 	return false;
 }
 template bool DatabaseModel::update<StudentInfo>(const StudentInfo& info);
 template bool DatabaseModel::update<ClassInfo>(const ClassInfo& info);
+template bool DatabaseModel::update<ProfessorInfo>(const ProfessorInfo& info);
 
 template <class Info>
 bool DatabaseModel::remove(unsigned id)
 {
-	if (get_dao_ptr<Info>()->remove_row(id))
+	if (get_dao_ptr<Info>(nullptr)->remove_row(id))
 	{
-		get_ptr<Info>()->erase(id);
+		get_ptr<Info>(nullptr)->erase(id);
 		return true;
 	}
 	return false;
 }
 template bool DatabaseModel::remove<StudentInfo>(unsigned id);
 template bool DatabaseModel::remove<ClassInfo>(unsigned id);
+template bool DatabaseModel::remove<ProfessorInfo>(unsigned id);
 
 template <class Info>
 Info DatabaseModel::get_by_id(unsigned id) const
 {	
-		return *(get_ptr<Info>()->at(id));
+		return *(get_ptr<Info>(nullptr)->at(id));
 }
 template StudentInfo DatabaseModel::get_by_id(unsigned id) const;
 template ClassInfo DatabaseModel::get_by_id(unsigned id) const;
+template ProfessorInfo DatabaseModel::get_by_id(unsigned id) const;
 
 std::list<StudentInfo> DatabaseModel::find_students(const std::string& str) const
 {
