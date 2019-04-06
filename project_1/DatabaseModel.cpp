@@ -40,28 +40,28 @@ DatabaseModel::DatabaseModel()
 
 // getters for add/remove/update //
 template <>
-std::map<uint, std::unique_ptr<StudentInfo>>* DatabaseModel::get_ptr(StudentInfo* i) const { return m_students_ptr.get(); }
+std::map<uint, std::unique_ptr<StudentInfo>>* DatabaseModel::get_ptr() const { return m_students_ptr.get(); }
 template <>
-std::map<uint, std::unique_ptr<ClassInfo>>* DatabaseModel::get_ptr(ClassInfo* i) const { return m_classes_ptr.get(); }
+std::map<uint, std::unique_ptr<ClassInfo>>* DatabaseModel::get_ptr() const { return m_classes_ptr.get(); }
 template <>
-std::map<uint, std::unique_ptr<ProfessorInfo>>* DatabaseModel::get_ptr(ProfessorInfo* i) const { return m_professors_ptr.get(); }
+std::map<uint, std::unique_ptr<ProfessorInfo>>* DatabaseModel::get_ptr() const { return m_professors_ptr.get(); }
 template <>
-BaseDao<ClassInfo>* DatabaseModel::get_dao_ptr(ClassInfo* i) const { return m_classdao.get(); }
+BaseDao<ClassInfo>* DatabaseModel::get_dao_ptr() const { return m_classdao.get(); }
 template <>
-BaseDao<StudentInfo>* DatabaseModel::get_dao_ptr(StudentInfo* i) const { return m_sdao.get(); }
+BaseDao<StudentInfo>* DatabaseModel::get_dao_ptr() const { return m_sdao.get(); }
 template <>
-BaseDao<ProfessorInfo>* DatabaseModel::get_dao_ptr(ProfessorInfo* i) const { return m_profdao.get(); }
+BaseDao<ProfessorInfo>* DatabaseModel::get_dao_ptr() const { return m_profdao.get(); }
 
 template <class Info>
 bool DatabaseModel::add(Info& info)
 {
-	uint id = get_dao_ptr<Info>(nullptr)->add_row(info);
+	uint id = get_dao_ptr<Info>()->add_row(info);
 	if (id != 0)
 	{
 		info.set_id(id);
 		auto obj = std::make_unique<Info>();
 		*obj = info;
-		get_ptr<Info>(nullptr)->emplace(id, std::move(obj));
+		get_ptr<Info>()->emplace(id, std::move(obj));
 		return true;
 	}
 	return false;
@@ -73,9 +73,9 @@ template bool DatabaseModel::add<ProfessorInfo>(ProfessorInfo& info);
 template <class Info>
 bool DatabaseModel::update(const Info& info)
 {
-	if (get_dao_ptr<Info>(nullptr)->update_row(info))
+	if (get_dao_ptr<Info>()->update_row(info))
 	{
-		*(get_ptr<Info>(nullptr)->at(info.get_id())) = info;
+		*(get_ptr<Info>()->at(info.get_id())) = info;
 		return true;
 	}
 	return false;
@@ -87,9 +87,9 @@ template bool DatabaseModel::update<ProfessorInfo>(const ProfessorInfo& info);
 template <class Info>
 bool DatabaseModel::remove(unsigned id)
 {
-	if (get_dao_ptr<Info>(nullptr)->remove_row(id))
+	if (get_dao_ptr<Info>()->remove_row(id))
 	{
-		get_ptr<Info>(nullptr)->erase(id);
+		get_ptr<Info>()->erase(id);
 		return true;
 	}
 	return false;
@@ -101,7 +101,7 @@ template bool DatabaseModel::remove<ProfessorInfo>(unsigned id);
 template <class Info>
 Info DatabaseModel::get_by_id(unsigned id) const
 {	
-		return *(get_ptr<Info>(nullptr)->at(id));
+		return *(get_ptr<Info>()->at(id));
 }
 template StudentInfo DatabaseModel::get_by_id(unsigned id) const;
 template ClassInfo DatabaseModel::get_by_id(unsigned id) const;

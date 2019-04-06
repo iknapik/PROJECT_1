@@ -60,11 +60,11 @@ namespace school {
 		unsigned id_from_lookup_elem(const std::string& str) const;
 		//templated getter for table pointers
 		template <class Info>
-		std::map<uint, std::unique_ptr<Info>>* get_ptr(Info* i) const;
+		std::map<uint, std::unique_ptr<Info>>* get_ptr() const;
 
 		//templated getter for db pointers
 		template <class Info>
-		BaseDao<Info>* get_dao_ptr(Info* i) const;
+		BaseDao<Info>* get_dao_ptr() const;
 
 
 
