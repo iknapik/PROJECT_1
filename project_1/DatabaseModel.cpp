@@ -15,25 +15,21 @@ DatabaseModel::DatabaseModel()
 	m_professors_ptr = m_profdao->get_rows();
 	m_classes_ptr = m_classdao->get_rows();
 	m_students_ptr = m_sdao->get_rows();
-	m_slookup = std::make_unique<std::vector<std::string>>();
-
-	m_slookup->reserve(m_students_ptr->size());
+	m_slookup = std::make_unique<std::map<unsigned, std::string>>();
+	m_mark_student_lookup = std::make_unique < std::map<unsigned, std::set<unsigned>>>();
+	m_mark_professor_lookup = std::make_unique < std::map<unsigned, std::set<unsigned>>>();
+	
 	for (auto& pair : *m_students_ptr)
 	{
-		auto stream = std::ostringstream();
-		auto vec = pair.second->to_string_vector();
-
-		for (auto& i : vec)
-		{
-			stream << to_lower(i) << " ";
-		}
-		try
-		{
-			stream << to_lower(m_classes_ptr->at(pair.second->m_class_id)->m_name) << " ";
-		}
-		catch(const std::out_of_range& err){stream << "unassigned ";}
-		stream << "--id=" << pair.first;
-		m_slookup->push_back(stream.str());
+		m_slookup->emplace(pair.first, make_lookup_str_from_student(*pair.second));
+	}
+	for (auto& pair : *m_marks_ptr)
+	{
+		(*m_mark_student_lookup)[pair.second->m_student_id].insert(pair.first);
+	}
+	for (auto& pair : *m_marks_ptr)
+	{
+		(*m_mark_professor_lookup)[pair.second->m_professor_id].insert(pair.first);
 	}
 }
 
@@ -55,8 +51,46 @@ BaseDao<ProfessorInfo>* DatabaseModel::get_dao_ptr() const { return m_profdao.ge
 template <>
 BaseDao<MarkInfo>* DatabaseModel::get_dao_ptr() const { return m_markdao.get(); }
 
-template <class Info>
+template<>
+bool DatabaseModel::add(StudentInfo& info)
+{
+	is_valid(info);
+	if (_add(info))
+	{
+		m_slookup->emplace(info.get_id(), make_lookup_str_from_student(info));
+		return true;
+	}
+	return false;
+}
+
+template<>
+bool DatabaseModel::add(MarkInfo& info)
+{
+	is_valid(info);
+	if (_add(info))
+	{
+		(*m_mark_student_lookup)[info.m_student_id].insert(info.get_id());
+		(*m_mark_professor_lookup)[info.m_professor_id].insert(info.get_id());
+		return true;
+	}
+	return false;
+}
+
+template<class Info>
 bool DatabaseModel::add(Info& info)
+{
+	if (_add(info))
+	{		
+		return true;
+	}
+	return false;
+}
+
+template bool DatabaseModel::add(ClassInfo&);
+template bool DatabaseModel::add(ProfessorInfo&);
+
+template <class Info>
+bool DatabaseModel::_add(Info& info)
 {
 	uint id = get_dao_ptr<Info>()->add_row(info);
 	if (id != 0)
@@ -69,13 +103,54 @@ bool DatabaseModel::add(Info& info)
 	}
 	return false;
 }
-template bool DatabaseModel::add(StudentInfo& info);
-template bool DatabaseModel::add(ClassInfo& info);
-template bool DatabaseModel::add(ProfessorInfo& info);
-template bool DatabaseModel::add(MarkInfo& info);
+template bool DatabaseModel::_add(StudentInfo&);
+template bool DatabaseModel::_add(ClassInfo&);
+template bool DatabaseModel::_add(ProfessorInfo&);
+template bool DatabaseModel::_add(MarkInfo&);
 
+template<>
+bool DatabaseModel::update(const StudentInfo& info)
+{
+	is_valid(info);
+	if (_update(info))
+	{
+		m_slookup->at(info.get_id()) = make_lookup_str_from_student(info);
+		return true;
+	}
+	return false;
+}
+
+template<>
+bool DatabaseModel::update(const MarkInfo& info)
+{
+	is_valid(info);
+	auto old_mark = *(m_marks_ptr->at(info.get_id()));
+	if (_update(info))
+	{
+		if (old_mark.m_student_id != info.m_student_id)
+		{
+			m_mark_student_lookup->at(old_mark.m_student_id).erase(info.get_id());
+			m_mark_student_lookup->at(info.m_student_id).insert(info.get_id());
+		}
+		if (old_mark.m_professor_id != info.m_professor_id)
+		{
+			m_mark_professor_lookup->at(old_mark.m_professor_id).erase(info.get_id());
+			m_mark_professor_lookup->at(info.m_professor_id).insert(info.get_id());
+		}
+		return true;
+	}
+	return false;
+}
 template <class Info>
 bool DatabaseModel::update(const Info& info)
+{
+	return _update(info);
+}
+template bool DatabaseModel::update(const ClassInfo&);
+template bool DatabaseModel::update(const ProfessorInfo&);
+
+template <class Info>
+bool DatabaseModel::_update(const Info& info)
 {
 	if (get_dao_ptr<Info>()->update_row(info))
 	{
@@ -84,12 +159,52 @@ bool DatabaseModel::update(const Info& info)
 	}
 	return false;
 }
-template bool DatabaseModel::update<StudentInfo>(const StudentInfo& info);
-template bool DatabaseModel::update<ClassInfo>(const ClassInfo& info);
-template bool DatabaseModel::update<ProfessorInfo>(const ProfessorInfo& info);
+template bool DatabaseModel::_update<StudentInfo>(const StudentInfo&);
+template bool DatabaseModel::_update<ClassInfo>(const ClassInfo&);
+template bool DatabaseModel::_update<ProfessorInfo>(const ProfessorInfo&);
+
+template <>
+bool DatabaseModel::remove<StudentInfo>(uint id)
+{
+	if (_remove<StudentInfo>(id))
+	{
+		m_slookup->erase(id);
+		return true;
+	}
+	return false;
+}
+template <>
+bool DatabaseModel::remove<MarkInfo>(uint id)
+{
+	MarkInfo old_mark;
+	try
+	{
+		old_mark = *m_marks_ptr->at(id);
+	}
+	catch (const std::out_of_range& err) 
+	{
+		return false;
+	}
+
+	if (_remove<MarkInfo>(id))
+	{
+		m_mark_professor_lookup->at(old_mark.m_professor_id).erase(id);
+		m_mark_student_lookup->at(old_mark.m_student_id).erase(id);
+		return true;
+	}
+	return false;
+}
 
 template <class Info>
 bool DatabaseModel::remove(unsigned id)
+{
+	return _remove<Info>(id);
+}
+template bool DatabaseModel::remove<ClassInfo>(unsigned);
+template bool DatabaseModel::remove<ProfessorInfo>(unsigned);
+
+template <class Info>
+bool DatabaseModel::_remove(unsigned id)
 {
 	if (get_dao_ptr<Info>()->remove_row(id))
 	{
@@ -98,18 +213,25 @@ bool DatabaseModel::remove(unsigned id)
 	}
 	return false;
 }
-template bool DatabaseModel::remove<StudentInfo>(unsigned id);
-template bool DatabaseModel::remove<ClassInfo>(unsigned id);
-template bool DatabaseModel::remove<ProfessorInfo>(unsigned id);
+template bool DatabaseModel::_remove<StudentInfo>(unsigned);
+template bool DatabaseModel::_remove<ClassInfo>(unsigned);
+template bool DatabaseModel::_remove<ProfessorInfo>(unsigned);
 
 template <class Info>
 Info DatabaseModel::get_by_id(unsigned id) const
-{	
+{
+	try
+	{
 		return *(get_ptr<Info>()->at(id));
+	}
+	catch (const std::out_of_range&) 
+	{
+		throw InvalidID(id);
+	}	
 }
-template StudentInfo DatabaseModel::get_by_id(unsigned id) const;
-template ClassInfo DatabaseModel::get_by_id(unsigned id) const;
-template ProfessorInfo DatabaseModel::get_by_id(unsigned id) const;
+template StudentInfo DatabaseModel::get_by_id(unsigned) const;
+template ClassInfo DatabaseModel::get_by_id(unsigned) const;
+template ProfessorInfo DatabaseModel::get_by_id(unsigned) const;
 
 std::list<StudentInfo> DatabaseModel::find_students(const std::string& str) const
 {
@@ -153,22 +275,14 @@ std::list<unsigned> DatabaseModel::find_students_helper(const std::string& str) 
 
 	for (auto& elem : *m_slookup)
 	{
-		if (elem.find(str_lower) != std::string::npos)
+		if (elem.second.find(str_lower) != std::string::npos)
 		{
-			unsigned id = id_from_lookup_elem(elem);
-			list.push_back(id);
+			list.push_back(elem.first);
 		}
 	}
 	return list;
 }
 
-unsigned DatabaseModel::id_from_lookup_elem(const std::string& str) const
-{
-	int last = str.rfind("--id=");
-	last += 5;
-
-	return std::stoul(str.substr(last));
-}
 
 std::list<StudentInfo> DatabaseModel::get_students_by_ids(const std::set<uint>& ids) const
 {
@@ -176,15 +290,25 @@ std::list<StudentInfo> DatabaseModel::get_students_by_ids(const std::set<uint>& 
 	if (ids.empty()) return list;
 	for (auto id : ids)
 	{
-		try 
-		{
-			list.push_back(*(m_students_ptr->at(id)));
-		}
-		catch (const std::out_of_range& err) {}
+		if (m_students_ptr->count(id))	list.push_back(*(m_students_ptr->at(id)));
+
 	}
 	return list;
 	
 }
+std::list<StudentInfo> DatabaseModel::get_students_by_class(uint id) const
+{
+	std::list<StudentInfo> list;
+	for (auto& pair : *m_students_ptr)
+	{
+		if (pair.second->m_class_id == id)
+		{
+			list.push_back(*pair.second);
+		}
+	}
+	return list;
+}
+
 
 std::list<StudentInfo> DatabaseModel::get_students_by_class(const std::string& str) const
 {
@@ -200,12 +324,89 @@ std::list<StudentInfo> DatabaseModel::get_students_by_class(const std::string& s
 			break;
 		}
 	}
+
 	if (class_id)
 	{
-		for (auto& pair : *m_students_ptr)
-		{
-			if (pair.second->m_class_id == class_id) list.push_back(*(pair.second));
-		}
+		return get_students_by_class(class_id);
 	}
 	return list;
+}
+
+
+std::vector<ClassInfo> DatabaseModel::get_classes() const
+{
+	std::vector<ClassInfo> vec;
+	vec.reserve(m_classes_ptr->size());
+	for (auto& pair : *m_classes_ptr)
+	{
+		vec.push_back(*(pair.second));
+	}
+	return vec;
+}
+
+std::vector<ProfessorInfo> DatabaseModel::get_professors() const
+{
+	std::vector<ProfessorInfo> vec;
+	vec.reserve(m_professors_ptr->size());
+	for (auto& pair : *m_professors_ptr)
+	{
+		vec.push_back(*(pair.second));
+	}
+	return vec;
+}
+
+std::string DatabaseModel::make_lookup_str_from_student(const StudentInfo& stud) const
+{
+	auto stream = std::ostringstream();
+	auto vec = stud.to_string_vector();
+	for (auto& i : vec)
+	{
+		stream << to_lower(i) << " ";
+	}
+	try
+	{
+		stream << to_lower(m_classes_ptr->at(stud.get_class_id())->m_name) << " ";
+	}
+	catch (const std::out_of_range&) { stream << "unassigned "; }
+	stream << "--id=" << stud.get_id();
+	return stream.str();
+}
+
+std::list<MarkInfo> DatabaseModel::get_marks_by_student_id(uint id) const
+{
+	std::list<MarkInfo> list;
+		for (auto i : m_mark_student_lookup->at(id))
+		{
+			if (m_marks_ptr->count(i)) list.push_back(*(m_marks_ptr->at(i)));
+		}
+
+	return list;
+}
+std::list<MarkInfo> DatabaseModel::get_marks_by_professor_id(uint id) const
+{
+	std::list<MarkInfo> list;
+	
+		for (auto i : m_mark_professor_lookup->at(id))
+		{
+			if (m_marks_ptr->count(i)) list.push_back(*(m_marks_ptr->at(i)));
+		}
+
+	return list;
+}
+
+bool DatabaseModel::is_valid(const StudentInfo& info) const
+{
+	
+		if (m_classes_ptr->count(info.m_class_id)) return true;
+		else throw InvalidClassID(info.m_class_id);
+}
+
+bool DatabaseModel::is_valid(const MarkInfo& info) const
+{
+	if (!m_students_ptr->count(info.m_student_id))	throw InvalidStudentID(info.m_student_id);
+	
+	if (!m_professors_ptr->count(info.m_professor_id)) throw InvalidProfessorID(info.m_professor_id);
+
+	return true;
+	
 }

@@ -9,6 +9,7 @@
 #include "ProfessorInfo.h"
 #include <regex>
 #include <list>
+#include "Errors.h"
 
 namespace school {
 
@@ -18,13 +19,20 @@ namespace school {
 	class DatabaseModel
 	{
 		typedef unsigned uint;
+		//database access objects
 		std::unique_ptr<BaseDao<ClassInfo>> m_classdao;
 		std::unique_ptr<BaseDao<StudentInfo>> m_sdao;
 		std::unique_ptr<BaseDao<ProfessorInfo>> m_profdao;
 		std::unique_ptr<BaseDao<MarkInfo>> m_markdao;
 
-		std::unique_ptr<std::vector<std::string>> m_slookup;
-
+		//lookup containing student id, string with student data that helps when searching by phraze
+		std::unique_ptr <std::map<uint, std::string>> m_slookup;
+		//student id, ids of his marks 
+		std::unique_ptr<std::map<uint, std::set<uint>>> m_mark_student_lookup;
+		//profesors id, ids of marks given by him
+		std::unique_ptr<std::map<uint, std::set<uint>>> m_mark_professor_lookup;
+		
+		//maps reflecting the state of database
 		std::unique_ptr<std::map<uint, std::unique_ptr<StudentInfo>>> m_students_ptr;
 		std::unique_ptr<std::map<uint, std::unique_ptr<ClassInfo>>> m_classes_ptr;
 		std::unique_ptr<std::map<uint, std::unique_ptr<ProfessorInfo>>> m_professors_ptr;
@@ -34,32 +42,55 @@ namespace school {
 		explicit DatabaseModel();
 		
 		//it searches in all STUDENT_FIELD_NAMES and class names
+		//it's case insensitive
 		std::list<StudentInfo> find_students(const std::string& str) const;
 
-		//silently ignores ids that are not in the database, worst case returns empty list
+		//if no students found these functions return empty list
 		std::list<StudentInfo> get_students_by_ids(const std::set<uint>& ids) const;
 		std::list<StudentInfo> get_students_by_class(const std::string& str) const;
+		std::list<StudentInfo> get_students_by_class(uint id) const;
+
+		std::vector<ClassInfo> get_classes() const;
+		std::vector<ProfessorInfo> get_professors() const;
+
+		//worst case these return empty list
+		std::list<MarkInfo> get_marks_by_student_id(uint id) const;
+		std::list<MarkInfo> get_marks_by_professor_id(uint id) const;
+
+		//gets any Info class by id, you have to specify correct Type to use this function
+		//throws InvalidID exception if id not found
+		template <class Info>
+		Info get_by_id(uint id) const;
 
 		//with update/add just pass in Info class it will know what to do
+		//updating/adding marks can throw two exceptions: InvalidStudentID or InvalidProfessorID
+		//updating/adding students can throw: InvalidClassID
 		template <class Info>
 		bool update(const Info& info);
 		template <class Info>
 		bool add(Info& info);
 		template <class Info>
-
 		//with remove and get_by_id you have to explicitly select what template to use
+		//return false if id not found
 		bool remove(uint id);
-		template <class Info>
-		Info get_by_id(uint id) const;
-		
-	private:
 
+	
+		bool is_valid(const StudentInfo& info) const;
+		//bool is_valid(const ClassInfo& info) const;
+		//bool is_valid(const ProfessorInfo& info) const;
+		bool is_valid(const MarkInfo& info) const;
+	private:
+		template <class Info>
+		bool _update(const Info& info);
+		template <class Info>
+		bool _add(Info& info);
+		template <class Info>		
+		bool _remove(uint id);
 		std::list<unsigned> find_students_helper(const std::string& str) const;
-		unsigned id_from_lookup_elem(const std::string& str) const;
 		//templated getter for table pointers
 		template <class Info>
 		std::map<uint, std::unique_ptr<Info>>* get_ptr() const;
-
+		std::string make_lookup_str_from_student(const StudentInfo& stud) const;
 		//templated getter for db pointers
 		template <class Info>
 		BaseDao<Info>* get_dao_ptr() const;

@@ -42,6 +42,9 @@
     <ClInclude Include="ProfessorInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Errors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="project_1.cpp">
