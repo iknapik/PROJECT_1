@@ -47,9 +47,6 @@
     <ClCompile Include="project_1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MarkInfo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="IdManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
