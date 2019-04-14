@@ -156,6 +156,7 @@
     <ClInclude Include="CSVDb.h" />
     <ClInclude Include="IdManager.h" />
     <ClInclude Include="MarkInfo.h" />
+    <ClInclude Include="ProfessorInfo.h" />
     <ClInclude Include="StudentInfo.h" />
     <ClInclude Include="BaseDao.h" />
     <ClInclude Include="DatabaseModel.h" />

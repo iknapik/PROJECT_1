@@ -39,13 +39,13 @@ DatabaseModel::DatabaseModel()
 
 // getters for add/remove/update //
 template <>
-std::map<uint, std::unique_ptr<StudentInfo>>* DatabaseModel::get_ptr() const { return m_students_ptr.get(); }
+std::map<unsigned, std::unique_ptr<StudentInfo>>* DatabaseModel::get_ptr() const { return m_students_ptr.get(); }
 template <>
-std::map<uint, std::unique_ptr<ClassInfo>>* DatabaseModel::get_ptr() const { return m_classes_ptr.get(); }
+std::map<unsigned, std::unique_ptr<ClassInfo>>* DatabaseModel::get_ptr() const { return m_classes_ptr.get(); }
 template <>
-std::map<uint, std::unique_ptr<ProfessorInfo>>* DatabaseModel::get_ptr() const { return m_professors_ptr.get(); }
+std::map<unsigned, std::unique_ptr<ProfessorInfo>>* DatabaseModel::get_ptr() const { return m_professors_ptr.get(); }
 template <>
-std::map<uint, std::unique_ptr<MarkInfo>>* DatabaseModel::get_ptr() const { return m_marks_ptr.get(); }
+std::map<unsigned, std::unique_ptr<MarkInfo>>* DatabaseModel::get_ptr() const { return m_marks_ptr.get(); }
 template <>
 BaseDao<ClassInfo>* DatabaseModel::get_dao_ptr() const { return m_classdao.get(); }
 template <>
