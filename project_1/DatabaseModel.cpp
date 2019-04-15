@@ -15,6 +15,7 @@ DatabaseModel::DatabaseModel()
 	m_professors_ptr = m_profdao->get_rows();
 	m_classes_ptr = m_classdao->get_rows();
 	m_students_ptr = m_sdao->get_rows();
+
 	m_slookup = std::make_unique<std::map<unsigned, std::string>>();
 	m_mark_student_lookup = std::make_unique < std::map<unsigned, std::set<unsigned>>>();
 	m_mark_professor_lookup = std::make_unique < std::map<unsigned, std::set<unsigned>>>();
@@ -35,13 +36,13 @@ DatabaseModel::DatabaseModel()
 
 // getters for add/remove/update //
 template <>
-std::map<unsigned, std::unique_ptr<StudentInfo>>* DatabaseModel::get_ptr() const { return m_students_ptr.get(); }
+std::map<unsigned, std::shared_ptr<StudentInfo>>* DatabaseModel::get_ptr() const { return m_students_ptr.get(); }
 template <>
-std::map<unsigned, std::unique_ptr<ClassInfo>>* DatabaseModel::get_ptr() const { return m_classes_ptr.get(); }
+std::map<unsigned, std::shared_ptr<ClassInfo>>* DatabaseModel::get_ptr() const { return m_classes_ptr.get(); }
 template <>
-std::map<unsigned, std::unique_ptr<ProfessorInfo>>* DatabaseModel::get_ptr() const { return m_professors_ptr.get(); }
+std::map<unsigned, std::shared_ptr<ProfessorInfo>>* DatabaseModel::get_ptr() const { return m_professors_ptr.get(); }
 template <>
-std::map<unsigned, std::unique_ptr<MarkInfo>>* DatabaseModel::get_ptr() const { return m_marks_ptr.get(); }
+std::map<unsigned, std::shared_ptr<MarkInfo>>* DatabaseModel::get_ptr() const { return m_marks_ptr.get(); }
 template <>
 BaseDao<ClassInfo>* DatabaseModel::get_dao_ptr() const { return m_classdao.get(); }
 template <>
@@ -181,7 +182,7 @@ bool DatabaseModel::remove<MarkInfo>(uint id)
 	{
 		old_mark = *m_marks_ptr->at(id);
 	}
-	catch (const std::out_of_range& err) 
+	catch (const std::out_of_range&) 
 	{
 		return false;
 	}
@@ -226,7 +227,7 @@ Info DatabaseModel::get_by_id(unsigned id) const
 	}
 	catch (const std::out_of_range&) 
 	{
-		throw InvalidID(id);
+		throw InvalidField(ErrorCode::INVALID_ID, id);
 	}	
 }
 template StudentInfo DatabaseModel::get_by_id(unsigned) const;
@@ -332,29 +333,6 @@ std::list<StudentInfo> DatabaseModel::get_students_by_class(const std::string& s
 	return list;
 }
 
-
-std::vector<ClassInfo> DatabaseModel::get_classes() const
-{
-	std::vector<ClassInfo> vec;
-	vec.reserve(m_classes_ptr->size());
-	for (auto& pair : *m_classes_ptr)
-	{
-		vec.push_back(*(pair.second));
-	}
-	return vec;
-}
-
-std::vector<ProfessorInfo> DatabaseModel::get_professors() const
-{
-	std::vector<ProfessorInfo> vec;
-	vec.reserve(m_professors_ptr->size());
-	for (auto& pair : *m_professors_ptr)
-	{
-		vec.push_back(*(pair.second));
-	}
-	return vec;
-}
-
 std::string DatabaseModel::make_lookup_str_from_student(const StudentInfo& stud) const
 {
 	auto stream = std::ostringstream();
@@ -396,16 +374,15 @@ std::list<MarkInfo> DatabaseModel::get_marks_by_professor_id(uint id) const
 
 bool DatabaseModel::is_valid(const StudentInfo& info) const
 {
-	
-		if (m_classes_ptr->count(info.m_class_id)) return true;
-		else throw InvalidClassID(info.m_class_id);
+	if (!m_classes_ptr->count(info.m_class_id))				throw InvalidField(ErrorCode::INVALID_CLASS_ID, info.m_class_id);
+	return true;
 }
 
 bool DatabaseModel::is_valid(const MarkInfo& info) const
 {
-	if (!m_students_ptr->count(info.m_student_id))	throw InvalidStudentID(info.m_student_id);
+	if (!m_students_ptr->count(info.m_student_id))	throw InvalidField(ErrorCode::INVALID_STUDENT_ID, info.m_student_id);
 	
-	if (!m_professors_ptr->count(info.m_professor_id)) throw InvalidProfessorID(info.m_professor_id);
+	if (!m_professors_ptr->count(info.m_professor_id)) throw InvalidField(ErrorCode::INVALID_PROFESSOR_ID, info.m_professor_id);
 
 	return true;
 	

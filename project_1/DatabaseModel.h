@@ -7,7 +7,6 @@
 #include "BaseDao.h"
 #include "ClassInfo.h"
 #include "ProfessorInfo.h"
-#include <regex>
 #include <list>
 #include "Errors.h"
 
@@ -33,10 +32,10 @@ namespace school {
 		std::unique_ptr<std::map<uint, std::set<uint>>> m_mark_professor_lookup;
 		
 		//maps reflecting the state of database
-		std::unique_ptr<std::map<uint, std::unique_ptr<StudentInfo>>> m_students_ptr;
-		std::unique_ptr<std::map<uint, std::unique_ptr<ClassInfo>>> m_classes_ptr;
-		std::unique_ptr<std::map<uint, std::unique_ptr<ProfessorInfo>>> m_professors_ptr;
-		std::unique_ptr<std::map<uint, std::unique_ptr<MarkInfo>>> m_marks_ptr;
+		std::unique_ptr<std::map<uint, std::shared_ptr<StudentInfo>>> m_students_ptr;
+		std::unique_ptr<std::map<uint, std::shared_ptr<ClassInfo>>> m_classes_ptr;
+		std::unique_ptr<std::map<uint, std::shared_ptr<ProfessorInfo>>> m_professors_ptr;
+		std::unique_ptr<std::map<uint, std::shared_ptr<MarkInfo>>> m_marks_ptr;
 
 	public:
 		explicit DatabaseModel();
@@ -49,10 +48,20 @@ namespace school {
 		std::list<StudentInfo> get_students_by_ids(const std::set<uint>& ids) const;
 		std::list<StudentInfo> get_students_by_class(const std::string& str) const;
 		std::list<StudentInfo> get_students_by_class(uint id) const;
+		
+		//return read only map that displays what's inside db
+		template <class Info>
+		const std::map<const uint,std::shared_ptr<const Info>> get_all()
+		{
+			std::map<const uint, std::shared_ptr<const Info>> map;
+			for (auto& pair : *get_ptr<Info>())
+			{	
+				map.insert_or_assign(pair.first, pair.second);
+			}
+			return map;
+		}
 
-		std::vector<ClassInfo> get_classes() const;
-		std::vector<ProfessorInfo> get_professors() const;
-
+		
 		//worst case these return empty list
 		std::list<MarkInfo> get_marks_by_student_id(uint id) const;
 		std::list<MarkInfo> get_marks_by_professor_id(uint id) const;
@@ -89,7 +98,7 @@ namespace school {
 		std::list<unsigned> find_students_helper(const std::string& str) const;
 		//templated getter for table pointers
 		template <class Info>
-		std::map<uint, std::unique_ptr<Info>>* get_ptr() const;
+		std::map<uint, std::shared_ptr<Info>>* get_ptr() const;
 		std::string make_lookup_str_from_student(const StudentInfo& stud) const;
 		//templated getter for db pointers
 		template <class Info>

@@ -7,6 +7,7 @@
 #include <array>
 #include <cstdio>
 #include <chrono>
+#include <iomanip>
 
 // timer class made just for testing purposes
 class Timer
@@ -89,14 +90,15 @@ int main()
 	{
 		try
 		{
+
 			db.add(stud1);
 			std::cout << "id dodanego studenta: " << stud1.get_id() << "\n";
 		}
-		catch (const InvalidClassID& err)
+		catch (const InvalidField& err)
 		{
-			std::cout << err.what() << " " << err.id << "\n";
+			std::cout << err.what() << " " << err.id() << "\n";
 		}
-		stud1.m_firstname = "Michal" + std::to_string(i);
+		stud1.m_firstname = "Michał" + std::to_string(i);
 		stud1.m_class_id = i % 4 + 1;
 	}
 	//przy dodawaniu marka może wywalić exception gdy id studenta lub profesora nie istnieją
@@ -114,7 +116,7 @@ int main()
 		std::cout << stud << "\n";
 	}
 	// szukamy studentów:
-	str = "MiChal4 WieJSKA 3";
+	str = "MiChal WieJSKA 3";
 	std::cout << "\nStudenci po szukanej frazie:\n====================================\n";
 	for (auto &stud : db.find_students(str))
 	{
@@ -135,17 +137,30 @@ int main()
 	}
 	//lista profesorów:
 	std::cout << "\nProfesorowie:\n====================================\n";
-	for (auto& prof : db.get_professors())
+
+	for (auto& prof : db.get_all<ProfessorInfo>())
 	{
-		std::cout << prof << "\n";
+		std::cout << std::setw(7) << "id: " << prof.first << " " << *prof.second << "\n";
 	}
 	//lista class:
 	std::cout << "\nKlasy:\n====================================\n";
-	for (auto& cls : db.get_classes())
+
+	for (auto& cls : db.get_all<ClassInfo>())
 	{
-		std::cout << cls << "\n";
+		std::cout << std::setw(7) << "id: " << cls.first << " " << *cls.second << "\n";
 	}
-	
+	//lista studentów:
+	std::cout << "\nStudenci:\n====================================\n";
+	for (auto& cls : db.get_all<StudentInfo>())
+	{
+		std::cout << *cls.second << "\n";
+	}
+	//lista marków:
+	std::cout << "\nMarki:\n====================================\n";
+	for (auto& mark : db.get_all<MarkInfo>())
+	{
+		std::cout << *mark.second << "\n";
+	}
 
 	timer.elapsed();
 	return 0;

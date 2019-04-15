@@ -2,42 +2,55 @@
 #define ERORRS_H_
 #include <exception>
 
-
-class InvalidStudentID :
-	public std::exception
+namespace school
 {
-	
-public:
-	unsigned id;
-	InvalidStudentID(unsigned id) : id(id) {}
-	const char* what() const noexcept { return "Student ID not coressponding to any students in database!"; }
-};
+	enum class ErrorCode
+	{
+		INVALID_ID, INVALID_STUDENT_ID, INVALID_PROFESSOR_ID, INVALID_CLASS_ID,
+		INVALID_MARK_ID, INVALID_FIRSTNAME, INVALID_SURNAME, INVALID_PESEL, INVALID_ADRESS,
+		INVALID_CITY, INVALID_SUBJECT_NAME
+	};
 
-class InvalidProfessorID :
-	public std::exception
-{
-public:
-	unsigned id;
-	InvalidProfessorID(unsigned id) : id(id) {}
-	const char* what() const noexcept { return "Professor ID not coressponding to any professors in database!"; }
-};
-
-class InvalidClassID : public std::exception
-{
-	
-public:
-	unsigned id;
-	InvalidClassID(unsigned id) : id(id) {}
-	const char* what() const noexcept { return "Class ID not coressponding to any classes in database!: "; }
-};
-
-class InvalidID : public std::exception
-{
-public:
-	unsigned id;
-	InvalidID(unsigned id) : id(id) {}
-	const char* what() const noexcept { return "ID not coressponding to any ids in database!"; }
-};
-
+	class InvalidField :
+		public std::exception
+	{
+		unsigned m_id;
+		ErrorCode m_code;
+	public:
+		
+		
+		InvalidField(ErrorCode code, unsigned id = 0) : m_code(code), m_id(id) {}
+		const char* what() const noexcept
+		{
+			switch (m_code)
+			{
+			case ErrorCode::INVALID_ID:
+				return "Invalid ID!";
+			case ErrorCode::INVALID_STUDENT_ID:
+				return "Invalid student ID!";
+			case ErrorCode::INVALID_ADRESS:
+				return "Invalid adress!";
+			case ErrorCode::INVALID_CLASS_ID:
+				return "Invalid class ID!";
+			case ErrorCode::INVALID_PROFESSOR_ID:
+				return "Invalid professor ID!";
+			case ErrorCode::INVALID_MARK_ID:
+				return "Invalid mark ID!";
+			case ErrorCode::INVALID_FIRSTNAME:
+				return "Invalid firstname!";
+			case ErrorCode::INVALID_SURNAME:
+				return "Invalid surname!";
+			case ErrorCode::INVALID_PESEL:
+				return "Invalid PESEL number!";
+			case ErrorCode::INVALID_SUBJECT_NAME:
+				return "Invalid name of the subject!";
+			case ErrorCode::INVALID_CITY:
+				return "Invalid name of the city!";
+			}
+		}
+		const ErrorCode error_code() const noexcept { return m_code; }
+		const unsigned id() const noexcept { return m_id; }
+	};
+}
 
 #endif // !Errors_h_

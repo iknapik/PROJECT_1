@@ -7,15 +7,17 @@ using namespace cheshire;
 IdManager::IdManager(const std::string& filename)
 {
 	sfilename = filename;
-	auto file = std::ifstream(sfilename, std::ios::in);
+	auto file = std::ifstream(sfilename, std::ios::in | std::ios::binary);
+	while (true)
+	{
 
-	std::string str;
-	std::getline(file, str);
-	std::istringstream stream{str};
-	while (stream >> str)
-	{	uint i = std::stoul(str);
-		id_vector.push_back(i);
+		char buffer[4];
+		file.read(buffer, 4);
+		if (!file.good()) break;
+		unsigned id{*(reinterpret_cast<unsigned*>(&buffer))};
+		id_vector.push_back(id);
 	}
+
 	if (id_vector.empty()) id_vector.push_back(1);
 }
 
@@ -38,10 +40,11 @@ unsigned int IdManager::get_id()
 
 bool IdManager::save()
 {
-	auto file = std::ofstream(sfilename, std::ios::trunc | std::ios::out);
-	for (unsigned int i = 0; i < id_vector.size(); ++i)
+	auto file = std::ofstream(sfilename, std::ios::trunc | std::ios::out | std::ios::binary);
+	for (auto id : id_vector)
 	{
-		file << id_vector[i] << ((i < id_vector.size() - 1) ? " " : "");
+		char* buffer{ reinterpret_cast<char*>(&id) };
+		file.write(buffer, 4);
 	}
 	return true;
 }
