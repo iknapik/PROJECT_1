@@ -1,6 +1,11 @@
 // project_1.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
-
+// comment out if you don't want to run tests
+//#define TESTS
+// -------------------------------------------
+#ifdef TESTS
+#include "Generator.h"
+#endif
 #include <iostream>
 #include "DatabaseModel.h"
 #include <cassert>
@@ -8,6 +13,9 @@
 #include <cstdio>
 #include <chrono>
 #include <iomanip>
+#include <random>
+
+
 
 // timer class made just for testing purposes
 class Timer
@@ -25,12 +33,15 @@ public:
 		auto ticks = std::chrono::duration_cast<std::chrono::milliseconds>(now - start).count();
 		auto secs = ticks / 1000;
 		std::cout << "Took: " << secs << "." << std::setfill('0') << std::setw(3) << ticks - secs * 1000 << " seconds.\n";
-		return ticks - ticks / 1000;
+		return ticks;
 	}
 };
 
+
 using namespace school;
 using namespace cheshire;
+
+
 
 void clean_db()
 {
@@ -48,6 +59,9 @@ int main()
 {
 	//dla testów usuwa wszystkie pliki bazy danych
 	clean_db();
+#ifndef TESTS
+
+
 
 	//dla testów
 	Timer timer{};
@@ -96,7 +110,7 @@ int main()
 				db.add(stud1);
 				std::cout << "id dodanego studenta: " << stud1.get_id() << "\n";
 			}
-			catch (const InvalidField& err)
+			catch (const DatabaseError& err)
 			{
 				std::cout << err.what() << " " << err.id() << "\n";
 			}
@@ -172,25 +186,100 @@ int main()
 		}
 	}
 	timer.elapsed();
-	bool test = true;
-	if (test)
+#endif // !TESTS
+	//PROSTE TESTY
+#ifdef TESTS
 	{
-		DatabaseModel db{};
-		ClassInfo cls{"14j", 2};
-		db.add(cls);
-		StudentInfo sinfo{"Kamil", "Miskowiec" , "934941", "Wadowice", "Krakowska 3", cls.get_id()};
-		db.add(sinfo);
-		assert(db.get_by_id<StudentInfo>(sinfo.get_id()).m_PESEL == sinfo.m_PESEL && "Student PESEL is not the same after getting it from db");
-		sinfo.m_lastname = "Pasternak";
-		db.update(sinfo);
-		assert(db.get_by_id<StudentInfo>(sinfo.get_id()).m_lastname == sinfo.m_lastname && "Student lastname is not the same after updating");
-		bool _throw = false;
-		try { db.get_by_id<StudentInfo>(99999999999); }
-		catch (const InvalidField& err)
+		
+		Timer timer{};
+		const unsigned students = 100;
+		const unsigned classes = 10;
+		const unsigned professors = 20;
+		const unsigned marks = 500;
+		Generator gen{students, classes, professors, marks};
 		{
-			if (err.error_code() == ErrorCode::INVALID_ID) _throw = true;
+			DatabaseModel db{};
+			gen.populate(db);
 		}
-		assert(_throw && "get_by_id didn't throw exception");
+		{
+			DatabaseModel db{};
+			//validate integrity
+			for (auto &i : gen.m_students)
+			{
+				assert(i == db.get_by_id<StudentInfo>(i.get_id()));
+			}
+			for (auto&i : gen.m_classes)
+			{
+				assert(i == db.get_by_id<ClassInfo>(i.get_id()));
+			}
+			for (auto&i : gen.m_marks)
+			{
+				assert(i == db.get_by_id<MarkInfo>(i.get_id()));
+			}
+			for (auto&i : gen.m_professors)
+			{
+				assert(i == db.get_by_id<ProfessorInfo>(i.get_id()));
+			}
+
+			for (size_t i = 1; i < students; i += students / 5)
+			{
+				gen.m_students[i].m_firstname = "Bolek";
+				db.update(gen.m_students[i]);
+			}
+			for (size_t i = 1; i < classes; i += classes / 5)
+			{
+				gen.m_classes[i].m_semester = 8;
+				db.update(gen.m_classes[i]);
+			}
+			for (size_t i = 1; i < professors; i += professors / 5)
+			{
+				gen.m_professors[i].m_first_name = "Mietek";
+				db.update(gen.m_professors[i]);
+			}
+			for (size_t i = 1; i < marks; i += marks / 5)
+			{
+				gen.m_marks[i].m_value = MARK::_2;
+				db.update(gen.m_marks[i]);
+			}
+		}
+		{
+			DatabaseModel db{};	
+			for (size_t i = 1; i < students; i += students / 5)
+			{
+				auto stud = db.get_by_id<StudentInfo>(gen.m_students[i].get_id());
+				assert(stud.m_firstname == "Bolek");
+				assert(db.remove(stud));
+			}
+			for (size_t i = 1; i < classes; i += classes / 5)
+			{
+				auto cls = db.get_by_id<ClassInfo>(gen.m_classes[i].get_id());
+				assert(cls.m_semester == 8);
+				if (db.get_students_by_class(cls.get_id()).empty())
+					assert(db.remove(cls));
+				else
+				{
+					bool _throw = false;
+					try
+					{
+						db.remove(cls);
+					}
+					catch (const DatabaseError& err)
+					{
+						if (err.error_code() == ErrorCode::CLASS_IN_USE) _throw = true;
+					}
+					assert(_throw);
+				}
+			}
+			for (size_t i = 1; i < professors; i += professors / 5)
+			{
+				auto prof = db.get_by_id<ProfessorInfo>(gen.m_professors[i].get_id());
+				assert(prof.m_first_name == "Mietek");
+				assert(db.remove(prof));
+			}
+			
+		}
+		timer.elapsed();
 	}
+#endif
 	return 0;
 }

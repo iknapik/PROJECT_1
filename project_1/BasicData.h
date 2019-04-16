@@ -23,6 +23,10 @@ public:
 	virtual void from_map(unsigned id, const std::unique_ptr<std::map<const std::string, std::string>>&) = 0;
 	virtual unsigned get_id() const = 0;
 	virtual void set_id(unsigned id) = 0;
+	bool operator==(const BasicData& info)
+	{
+		return this->to_string_vector() == info.to_string_vector();
+	}
 };
 
 }

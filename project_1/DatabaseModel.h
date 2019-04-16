@@ -78,12 +78,18 @@ namespace school {
 		bool update(const Info& info);
 		template <class Info>
 		bool add(Info& info);
-		template <class Info>
 		//with remove and get_by_id you have to explicitly select what template to use
 		//return false if id not found
-		bool remove(uint id);
+		//removing student removes all his marks
+		//removing class may throw an error when there are still students in that class
+		template <class Info>		
+		bool remove_by_id(uint id);
+		template <class Info>
+		bool remove(Info& info)
+		{
+			return remove_by_id<Info>(info.get_id());
+		}
 
-	
 		bool is_valid(const StudentInfo& info) const;
 		//bool is_valid(const ClassInfo& info) const;
 		//bool is_valid(const ProfessorInfo& info) const;

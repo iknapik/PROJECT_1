@@ -1,3 +1,7 @@
+#ifndef CLASS_INFO_H_
+#define CLASS_INFO_H_
+
+
 #include "BasicData.h"
 #include <sstream>
 #include <set>
@@ -43,3 +47,4 @@ namespace school {
 	};
 
 }
+#endif // CLASS_INFO_H_

@@ -164,18 +164,9 @@ template bool DatabaseModel::_update<StudentInfo>(const StudentInfo&);
 template bool DatabaseModel::_update<ClassInfo>(const ClassInfo&);
 template bool DatabaseModel::_update<ProfessorInfo>(const ProfessorInfo&);
 
+
 template <>
-bool DatabaseModel::remove<StudentInfo>(uint id)
-{
-	if (_remove<StudentInfo>(id))
-	{
-		m_slookup->erase(id);
-		return true;
-	}
-	return false;
-}
-template <>
-bool DatabaseModel::remove<MarkInfo>(uint id)
+bool DatabaseModel::remove_by_id<MarkInfo>(uint id)
 {
 	MarkInfo old_mark;
 	try
@@ -196,13 +187,37 @@ bool DatabaseModel::remove<MarkInfo>(uint id)
 	return false;
 }
 
+template <>
+bool DatabaseModel::remove_by_id<StudentInfo>(uint id)
+{
+	if (_remove<StudentInfo>(id))
+	{
+		m_slookup->erase(id);
+		auto marks = get_marks_by_student_id(id);
+		for (auto& mark : marks)
+		{
+			remove_by_id<MarkInfo>(mark.get_id());
+		}
+		return true;
+	}
+	return false;
+}
+
 template <class Info>
-bool DatabaseModel::remove(unsigned id)
+bool DatabaseModel::remove_by_id(unsigned id)
 {
 	return _remove<Info>(id);
 }
-template bool DatabaseModel::remove<ClassInfo>(unsigned);
-template bool DatabaseModel::remove<ProfessorInfo>(unsigned);
+template<>
+bool DatabaseModel::remove_by_id<ClassInfo>(unsigned id)
+{
+	if (!m_classes_ptr->count(id)) return false;
+	if (get_students_by_class(m_classes_ptr->at(id)->m_name).empty())
+		return _remove<ClassInfo>(id);
+	else
+		throw DatabaseError(ErrorCode::CLASS_IN_USE, id);
+}
+template bool DatabaseModel::remove_by_id<ProfessorInfo>(unsigned);
 
 template <class Info>
 bool DatabaseModel::_remove(unsigned id)
@@ -227,12 +242,13 @@ Info DatabaseModel::get_by_id(unsigned id) const
 	}
 	catch (const std::out_of_range&) 
 	{
-		throw InvalidField(ErrorCode::INVALID_ID, id);
+		throw DatabaseError(ErrorCode::INVALID_ID, id);
 	}	
 }
 template StudentInfo DatabaseModel::get_by_id(unsigned) const;
 template ClassInfo DatabaseModel::get_by_id(unsigned) const;
 template ProfessorInfo DatabaseModel::get_by_id(unsigned) const;
+template MarkInfo DatabaseModel::get_by_id(unsigned) const;
 
 std::list<StudentInfo> DatabaseModel::find_students(const std::string& str) const
 {
@@ -292,7 +308,7 @@ std::list<StudentInfo> DatabaseModel::get_students_by_class(const std::string& s
 	unsigned class_id = 0;
 	for (auto& pair : *m_classes_ptr)
 	{
-		if (str_lower == pair.second->m_name)
+		if (str_lower == to_lower(pair.second->m_name))
 		{
 			class_id = pair.first;
 			break;
@@ -347,15 +363,15 @@ std::list<MarkInfo> DatabaseModel::get_marks_by_professor_id(uint id) const
 
 bool DatabaseModel::is_valid(const StudentInfo& info) const
 {
-	if (!m_classes_ptr->count(info.m_class_id))				throw InvalidField(ErrorCode::INVALID_CLASS_ID, info.m_class_id);
+	if (!m_classes_ptr->count(info.m_class_id))				throw DatabaseError(ErrorCode::INVALID_CLASS_ID, info.m_class_id);
 	return true;
 }
 
 bool DatabaseModel::is_valid(const MarkInfo& info) const
 {
-	if (!m_students_ptr->count(info.m_student_id))	throw InvalidField(ErrorCode::INVALID_STUDENT_ID, info.m_student_id);
+	if (!m_students_ptr->count(info.m_student_id))	throw DatabaseError(ErrorCode::INVALID_STUDENT_ID, info.m_student_id);
 	
-	if (!m_professors_ptr->count(info.m_professor_id)) throw InvalidField(ErrorCode::INVALID_PROFESSOR_ID, info.m_professor_id);
+	if (!m_professors_ptr->count(info.m_professor_id)) throw DatabaseError(ErrorCode::INVALID_PROFESSOR_ID, info.m_professor_id);
 
 	return true;
 	
