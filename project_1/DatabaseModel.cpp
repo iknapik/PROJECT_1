@@ -17,8 +17,8 @@ DatabaseModel::DatabaseModel()
 	m_students_ptr = m_sdao->get_rows();
 
 	m_slookup = std::make_unique<std::map<unsigned, std::string>>();
-	m_mark_student_lookup = std::make_unique < std::map<unsigned, std::set<unsigned>>>();
-	m_mark_professor_lookup = std::make_unique < std::map<unsigned, std::set<unsigned>>>();
+	m_mark_student_lookup = std::make_unique < std::unordered_map<unsigned, std::set<unsigned>>>();
+	m_mark_professor_lookup = std::make_unique < std::unordered_map<unsigned, std::set<unsigned>>>();
 	
 	for (auto& pair : *m_students_ptr)
 	{
@@ -36,13 +36,13 @@ DatabaseModel::DatabaseModel()
 
 // getters for add/remove/update //
 template <>
-std::map<unsigned, std::shared_ptr<StudentInfo>>* DatabaseModel::get_ptr() const { return m_students_ptr.get(); }
+std::unordered_map<unsigned, std::shared_ptr<StudentInfo>>* DatabaseModel::get_ptr() const { return m_students_ptr.get(); }
 template <>
-std::map<unsigned, std::shared_ptr<ClassInfo>>* DatabaseModel::get_ptr() const { return m_classes_ptr.get(); }
+std::unordered_map<unsigned, std::shared_ptr<ClassInfo>>* DatabaseModel::get_ptr() const { return m_classes_ptr.get(); }
 template <>
-std::map<unsigned, std::shared_ptr<ProfessorInfo>>* DatabaseModel::get_ptr() const { return m_professors_ptr.get(); }
+std::unordered_map<unsigned, std::shared_ptr<ProfessorInfo>>* DatabaseModel::get_ptr() const { return m_professors_ptr.get(); }
 template <>
-std::map<unsigned, std::shared_ptr<MarkInfo>>* DatabaseModel::get_ptr() const { return m_marks_ptr.get(); }
+std::unordered_map<unsigned, std::shared_ptr<MarkInfo>>* DatabaseModel::get_ptr() const { return m_marks_ptr.get(); }
 template <>
 BaseDao<ClassInfo>* DatabaseModel::get_dao_ptr() const { return m_classdao.get(); }
 template <>
@@ -238,50 +238,23 @@ std::list<StudentInfo> DatabaseModel::find_students(const std::string& str) cons
 {
 	auto list = std::list<StudentInfo>();
 	if (str.empty()) return list;
-
-	std::istringstream stream(str);
+	std::string lower_str = to_lower(str);
+	std::istringstream stream(lower_str);
 	std::vector<std::string> result(std::istream_iterator<std::string>{stream}, std::istream_iterator<std::string>());
-	
-	if (result.size() == 1)
+	for (auto& pair : *m_slookup)
 	{
-		for (auto id : find_students_helper(str))
+		bool match = true;
+		for (auto& str : result)
 		{
-			list.push_back(*(m_students_ptr->at(id)));
+			if (pair.second.find(str) == std::string::npos) { match = false;  break; }
 		}
-		return list;
-	}
-	auto templist1 = find_students_helper(result[0]);
-	std::set<unsigned> temp1{templist1.begin(), templist1.end()};
-
-	for (auto it = result.begin() + 1; it != result.end(); ++it)
-	{
-		auto templist2 = find_students_helper(result[0]);
-		std::set<unsigned> temp2{ templist2.begin(), templist2.end()};
-		std::set_intersection(temp1.cbegin(), temp1.cend(), temp2.cbegin(), temp2.cend(), std::back_inserter(templist1));
-		temp1 = std::set<unsigned>(templist1.begin(), templist1.end());
-	}
-	for (auto i : temp1)
-	{
-		list.push_back(*(m_students_ptr->at(i)));
-	}
-	return list;
-	
-}
-
-std::list<unsigned> DatabaseModel::find_students_helper(const std::string& str) const
-{
-	std::string str_lower = to_lower(str);
-
-	auto list = std::list<unsigned>();
-
-	for (auto& elem : *m_slookup)
-	{
-		if (elem.second.find(str_lower) != std::string::npos)
+		if (match)
 		{
-			list.push_back(elem.first);
+			list.push_back(*(m_students_ptr->at(pair.first)));
 		}
 	}
 	return list;
+	
 }
 
 

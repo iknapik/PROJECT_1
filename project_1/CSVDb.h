@@ -1,6 +1,7 @@
 #ifndef _CSVDB_H_
 #define _CSVDB_H_
 
+#include <unordered_map>
 #include <map>
 #include <vector>
 #include <array>
@@ -37,7 +38,7 @@ namespace cheshire
 		bool remove_row(uint id, bool remove_only_one = false) const;
 		bool update_row(uint id, const std::vector<std::string>& data) const;
 		// returns a pair of (ID, DATA)
-		std::unique_ptr<std::map<uint, std::unique_ptr<std::map<const std::string, std::string>>>> get_rows(const std::set<uint>& ids = {}) const;
+		std::unique_ptr<std::unordered_map<uint, std::unique_ptr<std::map<const std::string, std::string>>>> get_rows(const std::set<uint>& ids = {}) const;
 		// returns map of (ID, map of (KEYS, DATA))
 		std::pair<unsigned, std::unique_ptr<std::map<const std::string, std::string>>> get_row(uint id) const;
 	};

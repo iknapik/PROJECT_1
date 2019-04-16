@@ -24,18 +24,18 @@ namespace school {
 		std::unique_ptr<BaseDao<ProfessorInfo>> m_profdao;
 		std::unique_ptr<BaseDao<MarkInfo>> m_markdao;
 
-		//lookup containing student id, string with student data that helps when searching by phraze
+		//lookup containing student id, string with student data that helps when searching by phrase
 		std::unique_ptr <std::map<uint, std::string>> m_slookup;
 		//student id, ids of his marks 
-		std::unique_ptr<std::map<uint, std::set<uint>>> m_mark_student_lookup;
+		std::unique_ptr<std::unordered_map<uint, std::set<uint>>> m_mark_student_lookup;
 		//profesors id, ids of marks given by him
-		std::unique_ptr<std::map<uint, std::set<uint>>> m_mark_professor_lookup;
+		std::unique_ptr<std::unordered_map<uint, std::set<uint>>> m_mark_professor_lookup;
 		
 		//maps reflecting the state of database
-		std::unique_ptr<std::map<uint, std::shared_ptr<StudentInfo>>> m_students_ptr;
-		std::unique_ptr<std::map<uint, std::shared_ptr<ClassInfo>>> m_classes_ptr;
-		std::unique_ptr<std::map<uint, std::shared_ptr<ProfessorInfo>>> m_professors_ptr;
-		std::unique_ptr<std::map<uint, std::shared_ptr<MarkInfo>>> m_marks_ptr;
+		std::unique_ptr<std::unordered_map<uint, std::shared_ptr<StudentInfo>>> m_students_ptr;
+		std::unique_ptr<std::unordered_map<uint, std::shared_ptr<ClassInfo>>> m_classes_ptr;
+		std::unique_ptr<std::unordered_map<uint, std::shared_ptr<ProfessorInfo>>> m_professors_ptr;
+		std::unique_ptr<std::unordered_map<uint, std::shared_ptr<MarkInfo>>> m_marks_ptr;
 
 	public:
 		explicit DatabaseModel();
@@ -49,7 +49,7 @@ namespace school {
 		std::list<StudentInfo> get_students_by_class(const std::string& str) const;
 		std::list<StudentInfo> get_students_by_class(uint id) const;
 		
-		//return read only map that displays what's inside db
+		//return readonly map that displays what's inside db
 		template <class Info>
 		const std::map<const uint,std::shared_ptr<const Info>> get_all()
 		{
@@ -95,10 +95,10 @@ namespace school {
 		bool _add(Info& info);
 		template <class Info>		
 		bool _remove(uint id);
-		std::list<unsigned> find_students_helper(const std::string& str) const;
+		std::set<unsigned> find_students_helper(const std::string& str) const;
 		//templated getter for table pointers
 		template <class Info>
-		std::map<uint, std::shared_ptr<Info>>* get_ptr() const;
+		std::unordered_map<uint, std::shared_ptr<Info>>* get_ptr() const;
 		std::string make_lookup_str_from_student(const StudentInfo& stud) const;
 		//templated getter for db pointers
 		template <class Info>

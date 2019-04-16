@@ -142,12 +142,12 @@ std::pair<unsigned,std::unique_ptr<std::map<const std::string, std::string>>> CS
 
 
 // 2 secs Faster than array version
-std::unique_ptr<std::map<unsigned int, std::unique_ptr<std::map<const std::string, std::string>>>> CSVDb::get_rows(const std::set<uint>& ids) const
+std::unique_ptr<std::unordered_map<unsigned int, std::unique_ptr<std::map<const std::string, std::string>>>> CSVDb::get_rows(const std::set<uint>& ids) const
 {
 	bool get_by_ids = false;
 	if (!ids.empty()) get_by_ids = true;
 
-	auto map_ptr = std::make_unique<std::map<uint, std::unique_ptr<std::map<const std::string, std::string>>>>();
+	auto map_ptr = std::make_unique<std::unordered_map<uint, std::unique_ptr<std::map<const std::string, std::string>>>>();
 	auto file = std::ifstream(m_file_name, std::ios::in);
 	
 	std::string str;

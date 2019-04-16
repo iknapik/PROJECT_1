@@ -38,9 +38,9 @@ public:
 	}
 	// converts from map returned by CSVDb to Map of T
 	// that pointer management though!
-	std::unique_ptr<std::map<uint, std::shared_ptr<T>>> get_rows(const std::set<uint>& ids = {}) const
+	std::unique_ptr<std::unordered_map<uint, std::shared_ptr<T>>> get_rows(const std::set<uint>& ids = {}) const
 	{
-		auto out_ptr = std::make_unique<std::map<uint, std::shared_ptr<T>>>();
+		auto out_ptr = std::make_unique<std::unordered_map<uint, std::shared_ptr<T>>>();
 		auto rows_ptr = m_database->get_rows(ids);
 		for (auto &map_ptr : *rows_ptr)
 		{
