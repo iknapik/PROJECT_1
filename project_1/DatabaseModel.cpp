@@ -4,12 +4,12 @@
 using namespace cheshire;
 using namespace school;
 
-DatabaseModel::DatabaseModel()
+DatabaseModel::DatabaseModel(const std::string& class_db_name, const std::string& stud_db_name, const std::string& prof_db_name, const std::string& mark_db_name)
 {
-	m_classdao = std::make_unique<BaseDao<ClassInfo>>("classes_db.txt", CLASS_FIELD_NAMES);
-	m_sdao = std::make_unique<BaseDao<StudentInfo>>("students_db.txt", STUDENT_FIELD_NAMES);
-	m_profdao = std::make_unique<BaseDao<ProfessorInfo>>("professors_db.txt", PROFESSOR_FIELD_NAMES);
-	m_markdao = std::make_unique<BaseDao<MarkInfo>>("marks_db.txt", MARK_FIELD_NAMES);
+	m_classdao = std::make_unique<BaseDao<ClassInfo>>(class_db_name.c_str(), CLASS_FIELD_NAMES);
+	m_sdao = std::make_unique<BaseDao<StudentInfo>>(stud_db_name.c_str(), STUDENT_FIELD_NAMES);
+	m_profdao = std::make_unique<BaseDao<ProfessorInfo>>(prof_db_name.c_str(), PROFESSOR_FIELD_NAMES);
+	m_markdao = std::make_unique<BaseDao<MarkInfo>>(mark_db_name.c_str(), MARK_FIELD_NAMES);
 
 	m_marks_ptr = m_markdao->get_rows();
 	m_professors_ptr = m_profdao->get_rows();
@@ -20,17 +20,27 @@ DatabaseModel::DatabaseModel()
 	m_mark_student_lookup = std::make_unique < std::unordered_map<unsigned, std::set<unsigned>>>();
 	m_mark_professor_lookup = std::make_unique < std::unordered_map<unsigned, std::set<unsigned>>>();
 	
+	auto file = std::ifstream("passwords.txt", std::ios::in);
+	if (file.fail()) { m_admin_password = "admin"; m_professor_password = ""; m_student_password = ""; save_password(); }
+	std::getline(file, m_admin_password, ',');
+	std::getline(file, m_professor_password, ',');
+	std::getline(file, m_student_password, ',');
+	file.close();
+
 	for (auto& pair : *m_students_ptr)
 	{
 		m_slookup->emplace(pair.first, make_lookup_str_from_student(*pair.second));
+		m_mark_student_lookup->emplace(pair.first, std::set<uint>());
 	}
+	for (auto& pair : *m_professors_ptr)
+	{
+		m_mark_professor_lookup->emplace(pair.first, std::set<uint>());
+	}
+	m_mark_professor_lookup->emplace(0, std::set<uint>());
 	for (auto& pair : *m_marks_ptr)
 	{
-		(*m_mark_student_lookup)[pair.second->m_student_id].insert(pair.first);
-	}
-	for (auto& pair : *m_marks_ptr)
-	{
-		(*m_mark_professor_lookup)[pair.second->m_professor_id].insert(pair.first);
+		m_mark_student_lookup->at(pair.second->m_student_id).insert(pair.first);
+		m_mark_professor_lookup->at(pair.second->m_professor_id).insert(pair.first);
 	}
 }
 
@@ -53,42 +63,54 @@ template <>
 BaseDao<MarkInfo>* DatabaseModel::get_dao_ptr() const { return m_markdao.get(); }
 
 template<>
-bool DatabaseModel::add(StudentInfo& info)
+void DatabaseModel::add(StudentInfo& info)
 {
 	is_valid(info);
 	if (_add(info))
 	{
 		m_slookup->emplace(info.get_id(), make_lookup_str_from_student(info));
-		return true;
+		m_mark_student_lookup->emplace(info.get_id(), std::set<uint>{});
+		return;
 	}
-	return false;
+	throw DatabaseError(ErrorCode::DISSALOWED_CHARACTER);
 }
 
 template<>
-bool DatabaseModel::add(MarkInfo& info)
+void DatabaseModel::add(MarkInfo& info)
 {
 	is_valid(info);
 	if (_add(info))
 	{
-		(*m_mark_student_lookup)[info.m_student_id].insert(info.get_id());
-		(*m_mark_professor_lookup)[info.m_professor_id].insert(info.get_id());
-		return true;
+		m_mark_student_lookup->at(info.m_student_id).insert(info.get_id());
+		m_mark_professor_lookup->at(info.m_professor_id).insert(info.get_id());
+		return;
 	}
-	return false;
-}
+	throw DatabaseError(ErrorCode::DISSALOWED_CHARACTER);
 
-template<class Info>
-bool DatabaseModel::add(Info& info)
+}
+template <>
+void DatabaseModel::add(ProfessorInfo& info)
 {
 	if (_add(info))
 	{		
-		return true;
+		m_mark_professor_lookup->emplace(info.get_id(), std::set<uint>{});
+		return;
 	}
-	return false;
+	throw DatabaseError(ErrorCode::DISSALOWED_CHARACTER);
 }
 
-template bool DatabaseModel::add(ClassInfo&);
-template bool DatabaseModel::add(ProfessorInfo&);
+template<class Info>
+void DatabaseModel::add(Info& info)
+{
+	if (_add(info))
+	{		
+		return;
+	}
+	throw DatabaseError(ErrorCode::DISSALOWED_CHARACTER);
+}
+
+template void DatabaseModel::add(ClassInfo&);
+template void DatabaseModel::add(ProfessorInfo&);
 
 template <class Info>
 bool DatabaseModel::_add(Info& info)
@@ -109,21 +131,22 @@ template bool DatabaseModel::_add(ClassInfo&);
 template bool DatabaseModel::_add(ProfessorInfo&);
 template bool DatabaseModel::_add(MarkInfo&);
 
-template<>
-bool DatabaseModel::update(const StudentInfo& info)
+void DatabaseModel::update(const StudentInfo& info)
 {
+	if (!m_slookup->count(info.get_id())) throw DatabaseError(ErrorCode::INVALID_STUDENT_ID);
 	is_valid(info);
 	if (_update(info))
 	{
 		m_slookup->at(info.get_id()) = make_lookup_str_from_student(info);
-		return true;
+		return;
 	}
-	return false;
+	throw DatabaseError(ErrorCode::DISSALOWED_CHARACTER);
 }
 
-template<>
-bool DatabaseModel::update(const MarkInfo& info)
+void DatabaseModel::update(const MarkInfo& info)
 {
+	if (!m_marks_ptr->count(info.get_id())) throw DatabaseError(ErrorCode::INVALID_MARK_ID);
+
 	is_valid(info);
 	auto old_mark = *(m_marks_ptr->at(info.get_id()));
 	if (_update(info))
@@ -138,17 +161,21 @@ bool DatabaseModel::update(const MarkInfo& info)
 			m_mark_professor_lookup->at(old_mark.m_professor_id).erase(info.get_id());
 			m_mark_professor_lookup->at(info.m_professor_id).insert(info.get_id());
 		}
-		return true;
+		return;
 	}
-	return false;
+	throw DatabaseError(ErrorCode::DISSALOWED_CHARACTER);
 }
-template <class Info>
-bool DatabaseModel::update(const Info& info)
+void DatabaseModel::update(const ClassInfo& info)
 {
-	return _update(info);
+	if (!m_classes_ptr->count(info.get_id())) throw DatabaseError(ErrorCode::INVALID_CLASS_ID);
+	if (!_update(info)) throw DatabaseError(ErrorCode::DISSALOWED_CHARACTER);
 }
-template bool DatabaseModel::update(const ClassInfo&);
-template bool DatabaseModel::update(const ProfessorInfo&);
+
+void DatabaseModel::update(const ProfessorInfo& info)
+{
+	if (!m_professors_ptr->count(info.get_id())) throw DatabaseError(ErrorCode::INVALID_PROFESSOR_ID);
+	if (!_update(info)) throw DatabaseError(ErrorCode::DISSALOWED_CHARACTER);
+}
 
 template <class Info>
 bool DatabaseModel::_update(const Info& info)
@@ -165,8 +192,7 @@ template bool DatabaseModel::_update<ClassInfo>(const ClassInfo&);
 template bool DatabaseModel::_update<ProfessorInfo>(const ProfessorInfo&);
 
 
-template <>
-bool DatabaseModel::remove_by_id<MarkInfo>(uint id)
+bool DatabaseModel::remove_mark_by_id(uint id)
 {
 	MarkInfo old_mark;
 	try
@@ -187,29 +213,23 @@ bool DatabaseModel::remove_by_id<MarkInfo>(uint id)
 	return false;
 }
 
-template <>
-bool DatabaseModel::remove_by_id<StudentInfo>(uint id)
+bool DatabaseModel::remove_student_by_id(uint id)
 {
-	if (_remove<StudentInfo>(id))
+	if (m_students_ptr->count(id))
 	{
 		m_slookup->erase(id);
 		auto marks = get_marks_by_student_id(id);
 		for (auto& mark : marks)
 		{
-			remove_by_id<MarkInfo>(mark.get_id());
+			remove_mark_by_id(mark.get_id());
 		}
-		return true;
+		m_mark_student_lookup->erase(id);
+		return _remove<StudentInfo>(id);
 	}
 	return false;
 }
 
-template <class Info>
-bool DatabaseModel::remove_by_id(unsigned id)
-{
-	return _remove<Info>(id);
-}
-template<>
-bool DatabaseModel::remove_by_id<ClassInfo>(unsigned id)
+bool DatabaseModel::remove_class_by_id(unsigned id)
 {
 	if (!m_classes_ptr->count(id)) return false;
 	if (get_students_by_class(m_classes_ptr->at(id)->m_name).empty())
@@ -217,7 +237,21 @@ bool DatabaseModel::remove_by_id<ClassInfo>(unsigned id)
 	else
 		throw DatabaseError(ErrorCode::CLASS_IN_USE, id);
 }
-template bool DatabaseModel::remove_by_id<ProfessorInfo>(unsigned);
+bool DatabaseModel::remove_professor_by_id(unsigned id)
+{
+	if (m_professors_ptr->count(id))
+	{
+		auto mlist = get_marks_by_professor_id(id);
+		for (auto& m : mlist)
+		{
+			m.m_professor_id = 0;
+			update(m);
+		}
+		m_mark_professor_lookup->erase(id);
+		return _remove<ProfessorInfo>(id);
+	}
+	return false;
+}
 
 template <class Info>
 bool DatabaseModel::_remove(unsigned id)
@@ -254,7 +288,8 @@ std::list<StudentInfo> DatabaseModel::find_students(const std::string& str) cons
 {
 	auto list = std::list<StudentInfo>();
 	if (str.empty()) return list;
-	std::string lower_str = to_lower(str);
+	std::string lower_str = trim(to_lower(str));
+	if (lower_str.empty()) return list;
 	std::istringstream stream(lower_str);
 	std::vector<std::string> result(std::istream_iterator<std::string>{stream}, std::istream_iterator<std::string>());
 	for (auto& pair : *m_slookup)
@@ -342,6 +377,7 @@ std::string DatabaseModel::make_lookup_str_from_student(const StudentInfo& stud)
 std::list<MarkInfo> DatabaseModel::get_marks_by_student_id(uint id) const
 {
 	std::list<MarkInfo> list;
+	if (!m_students_ptr->count(id)) return list;
 		for (auto i : m_mark_student_lookup->at(id))
 		{
 			if (m_marks_ptr->count(i)) list.push_back(*(m_marks_ptr->at(i)));
@@ -352,7 +388,7 @@ std::list<MarkInfo> DatabaseModel::get_marks_by_student_id(uint id) const
 std::list<MarkInfo> DatabaseModel::get_marks_by_professor_id(uint id) const
 {
 	std::list<MarkInfo> list;
-	
+	if (!m_professors_ptr->count(id)) return list;
 		for (auto i : m_mark_professor_lookup->at(id))
 		{
 			if (m_marks_ptr->count(i)) list.push_back(*(m_marks_ptr->at(i)));
@@ -361,18 +397,63 @@ std::list<MarkInfo> DatabaseModel::get_marks_by_professor_id(uint id) const
 	return list;
 }
 
-bool DatabaseModel::is_valid(const StudentInfo& info) const
+void DatabaseModel::is_valid(const StudentInfo& info) const
 {
 	if (!m_classes_ptr->count(info.m_class_id))				throw DatabaseError(ErrorCode::INVALID_CLASS_ID, info.m_class_id);
+}
+
+void DatabaseModel::is_valid(const MarkInfo& info) const
+{
+	//if student doesnt exists
+	if (!m_students_ptr->count(info.m_student_id))	throw DatabaseError(ErrorCode::INVALID_STUDENT_ID, info.m_student_id);
+	
+	//if prof id == 0 it means professor was removed
+	if (info.m_professor_id == 0) return;
+	if (!m_professors_ptr->count(info.m_professor_id)) throw DatabaseError(ErrorCode::INVALID_PROFESSOR_ID, info.m_professor_id);
+}
+
+bool DatabaseModel::save_password() const
+{
+
+	if (m_admin_password.find(',') != std::string::npos || m_professor_password.find(',') != std::string::npos || m_student_password.find(',') != std::string::npos)
+		return false;
+	auto file = std::ofstream("passwords.txt", std::ios::out);
+	file << m_admin_password << "," << m_professor_password << "," << m_student_password << ",";
 	return true;
 }
 
-bool DatabaseModel::is_valid(const MarkInfo& info) const
+bool DatabaseModel::check_integrity() const
 {
-	if (!m_students_ptr->count(info.m_student_id))	throw DatabaseError(ErrorCode::INVALID_STUDENT_ID, info.m_student_id);
-	
-	if (!m_professors_ptr->count(info.m_professor_id)) throw DatabaseError(ErrorCode::INVALID_PROFESSOR_ID, info.m_professor_id);
+	auto slook = m_slookup->size();
+	auto markslook = m_mark_student_lookup->size();
+	auto markplook = m_mark_professor_lookup->size();
+	auto studs = m_students_ptr->size();
+	auto profs = m_professors_ptr->size();
+	auto clss = m_classes_ptr->size();
+	auto marks = m_marks_ptr->size();
+	size_t total_marks = 0;
+	size_t total_marks2 = 0;
+	for (auto& pair : *m_mark_student_lookup)
+	{
+		total_marks += pair.second.size();
+	}
+	for (auto& pair : *m_mark_professor_lookup)
+	{
+		total_marks2 += pair.second.size();
+	}
+	/*
+	std::cout << slook << " m_slookup size\n";
+	std::cout << markslook << " m_mark_student size\n";
+	std::cout << markplook << " m_mark_professor size\n";
+	std::cout << studs << " stud_ptr\n";
+	std::cout << profs << " prof_ptr\n";
+	std::cout << clss << " classes_ptr\n";
+	std::cout << marks << " marks_ptr\n";
+	std::cout << total_marks << " marks counted from markstudentlookup\n";
+	std::cout << total_marks2 << " marks counted from marksproflookup\n";
+	*/
+	return slook == studs && markslook == studs && markplook == profs + 1 &&
+		total_marks == total_marks2;
 
-	return true;
-	
+
 }

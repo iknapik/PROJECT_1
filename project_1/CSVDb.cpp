@@ -11,7 +11,7 @@ bool CSVDb::is_valid(const std::vector<std::string>& data) const
 	return true;
 }
 
-CSVDb::CSVDb(const char* filename, const std::vector<std::string>& header) : m_header(header), m_file_name(filename)
+CSVDb::CSVDb(const std::string& filename, const std::vector<std::string>& header) : m_header(header), m_file_name(filename)
 {
 	// if file exists and it's not empty do nothing
 	std::ifstream test(filename, std::ios::in);
@@ -92,8 +92,8 @@ bool CSVDb::remove_row(unsigned id, bool remove_only_one) const
 			file.close();
 			temp.close();
 			//std::cout << "\nRENAMING\n";
-			std::remove(m_file_name);
-			std::rename("temp.txt", m_file_name);
+			std::remove(m_file_name.c_str());
+			std::rename("temp.txt", m_file_name.c_str());
 		}
 	}
 	return removed;

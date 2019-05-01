@@ -8,16 +8,15 @@ namespace school
 	{
 		INVALID_ID, INVALID_STUDENT_ID, INVALID_PROFESSOR_ID, INVALID_CLASS_ID,
 		INVALID_MARK_ID, INVALID_FIRSTNAME, INVALID_SURNAME, INVALID_PESEL, INVALID_ADRESS,
-		INVALID_CITY, INVALID_SUBJECT_NAME, CLASS_IN_USE
+		INVALID_CITY, INVALID_SUBJECT_NAME, CLASS_IN_USE, DISSALOWED_CHARACTER
 	};
 
 	class DatabaseError :
 		public std::exception
 	{
-		unsigned m_id;
 		ErrorCode m_code;
+		unsigned m_id;
 	public:
-		
 		
 		DatabaseError(ErrorCode code, unsigned id = 0) : m_code(code), m_id(id) {}
 		const char* what() const noexcept
@@ -48,6 +47,8 @@ namespace school
 				return "Invalid name of the city!";
 			case ErrorCode::CLASS_IN_USE:
 				return "Cannot remove class, there are still students in it!";
+			case ErrorCode::DISSALOWED_CHARACTER:
+				return "Dissalowed character used!";
 			}
 		}
 		const ErrorCode error_code() const noexcept { return m_code; }

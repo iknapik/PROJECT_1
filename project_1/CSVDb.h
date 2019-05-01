@@ -30,10 +30,10 @@ namespace cheshire
 		
 		// for storing KEYS
 		const std::vector<std::string> m_header;
-		const char* m_file_name;
+		const std::string m_file_name;
 		bool is_valid(const std::vector<std::string>& data) const;
 	public:
-		explicit CSVDb(const char* filename, const std::vector<std::string>& header);
+		explicit CSVDb(const std::string& filename, const std::vector<std::string>& header);
 		bool add_row(uint id, const std::vector<std::string>& data) const;
 		bool remove_row(uint id, bool remove_only_one = false) const;
 		bool update_row(uint id, const std::vector<std::string>& data) const;

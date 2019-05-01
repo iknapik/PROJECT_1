@@ -7,6 +7,7 @@ it works with any type that implements BasicData
 #ifndef BASEDAO_H_
 #define BASEDAO_H_
 #include "CSVDb.h"
+#include "BasicData.h"
 #include <memory>
 #include <map>
 
