@@ -26,6 +26,7 @@ USERTYPE login_view(const school::DatabaseModel& db);
 int main()
 {
 	school::DatabaseModel db("cls_db.txt", "std_db.txt", "prs_db.txt", "mrk_db.txt");
+	login:
 	USERTYPE type = login_view(db);
 	if (stop) return 1;
 	switch (type)
@@ -34,6 +35,7 @@ int main()
 		AdminView admin_view(db);
 		admin_view.menu();
 		if (admin_view.is_exit_requested()) return 2;
+		else goto login;
 		break;
 	}
 	// ... USERTYPE::STUDENT ...
@@ -47,8 +49,9 @@ USERTYPE login_view(const school::DatabaseModel& db)
 	std::string response;
 	std::string password;
 	USERTYPE type;
-	std::cout << "Username: Admin|Professor|Student\n";
+	std::cout << "q|Q|exit|quit for exit\n";
 	username:
+	std::cout << "Username: Admin|Professor|Student\n";
 	while (true)
 	{
 		get_response(response);

@@ -67,7 +67,7 @@ namespace school {
 		
 		//return readonly map that displays what's inside db
 		template <class Info>
-		const std::map<const uint,std::shared_ptr<const Info>> get_all()
+		const std::map<const uint,std::shared_ptr<const Info>> get_all() const
 		{
 			std::map<const uint, std::shared_ptr<const Info>> map;
 			for (auto& pair : *get_ptr<Info>())

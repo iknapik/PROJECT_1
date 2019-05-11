@@ -21,7 +21,7 @@ DatabaseModel::DatabaseModel(const std::string& class_db_name, const std::string
 	m_mark_professor_lookup = std::make_unique < std::unordered_map<unsigned, std::set<unsigned>>>();
 	
 	auto file = std::ifstream("passwords.txt", std::ios::in);
-	if (file.fail()) { m_admin_password = "admin"; m_professor_password = ""; m_student_password = ""; save_password(); }
+	if (file.fail()) { m_admin_password = "admin"; m_professor_password = "professor"; m_student_password = "student"; save_password(); }
 	std::getline(file, m_admin_password, ',');
 	std::getline(file, m_professor_password, ',');
 	std::getline(file, m_student_password, ',');
