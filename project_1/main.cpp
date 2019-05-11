@@ -59,7 +59,7 @@ USERTYPE login_view(const school::DatabaseModel& db)
 		if (response == "Admin") { password = db.get_admin_password(); type = USERTYPE::ADMIN;	break; }
 		else if (response == "Professor") { password = db.get_professor_password();	type = USERTYPE::PROFESSOR; break; }
 		else if (response == "Student") { password = db.get_student_password(); type = USERTYPE::STUDENT;	break; }
-		std::cout << "Try again!\n";
+		std::cout << "Try again\n";
 	}
 	if (password.empty())
 	{

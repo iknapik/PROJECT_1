@@ -1,5 +1,6 @@
 #include "DatabaseModel.h"
 #include <algorithm>
+#include <iterator>
 
 using namespace cheshire;
 using namespace school;
