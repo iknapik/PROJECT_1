@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <string_view>
 #include "AdminView.h"
+#include "Generator.h"
 
 
 bool stop = false;
@@ -26,6 +27,16 @@ USERTYPE login_view(const project::DatabaseModel& db);
 int main()
 {
 	project::DatabaseModel db("cls_db.txt", "std_db.txt", "prs_db.txt", "mrk_db.txt");
+	/* //generator if you want for testing
+	const unsigned students = 200;
+	const unsigned classes = 10;
+	const unsigned professors = 20;
+	const unsigned marks = 1000;
+	Generator gen(students, classes, professors, marks);
+	gen.populate(db);
+	*/
+
+
 	login:
 	USERTYPE type = login_view(db);
 	if (stop) return 1;
