@@ -92,10 +92,10 @@ namespace school {
 		//updating throws DatabaseError if item doesn't exists
 		//when updating/adding student make sure it has proper class id
 		//when updating/adding mark make sure it has proper student and professor id
-		void update(const StudentInfo& info);
-		void update(const ClassInfo& info);
-		void update(const ProfessorInfo& info);
-		void update(const MarkInfo& info);
+		void update(const StudentInfo& info); //throws DatabaseError with errorcode:  ErrorCode::INVALID_STUDENT_ID, ErrorCode::DISSALOWED_CHARACTER, ErrorCode::INVALID_CLASS_ID
+		void update(const ClassInfo& info); //throws DatabaseError with errorcode:  ErrorCode::INVALID_CLASS_ID, ErrorCode::DISSALOWED_CHARACTER
+		void update(const ProfessorInfo& info); //throws DatabaseError with errorcode:  ErrorCode::INVALID_PROFESSOR_ID, ErrorCode::DISSALOWED_CHARACTER
+		void update(const MarkInfo& info); //throws DatabaseError with errorcode:  ErrorCode::INVALID_STUDENT_ID, ErrorCode::DISSALOWED_CHARACTER, ErrorCode::INVALID_PROFESSOR_ID, ErrorCode::INVALID_MARK_ID
 		template <class Info>
 		void add(Info& info);
 		
