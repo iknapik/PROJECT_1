@@ -26,6 +26,21 @@ USERTYPE login_view(const project::DatabaseModel& db);
 int main()
 {
 	project::DatabaseModel db("cls_db.txt", "std_db.txt", "prs_db.txt", "mrk_db.txt");
+	login:
+	USERTYPE type = login_view(db);
+	if (stop) return 1;
+	switch (type)
+	{
+	case USERTYPE::ADMIN:
+		AdminView admin_view(db);
+		admin_view.menu();
+		if (admin_view.is_exit_requested()) return 2;
+		else goto login;
+		break;
+	}
+	// ... USERTYPE::STUDENT ...
+
+	
 	return 0;
 }
 
