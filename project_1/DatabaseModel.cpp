@@ -3,7 +3,7 @@
 #include <iterator>
 
 using namespace cheshire;
-using namespace school;
+using namespace project;
 
 DatabaseModel::DatabaseModel(const std::string& class_db_name, const std::string& stud_db_name, const std::string& prof_db_name, const std::string& mark_db_name)
 {

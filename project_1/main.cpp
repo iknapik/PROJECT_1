@@ -6,7 +6,7 @@
 
 
 bool stop = false;
-using namespace school;
+using namespace project;
 //enum used to tell what privileges should use have
 enum class USERTYPE
 {
@@ -22,29 +22,14 @@ bool is_exit_requested(std::string_view str)
 void get_response(std::string& buffer);
 
 //view where user can login returns info about privileges
-USERTYPE login_view(const school::DatabaseModel& db);
+USERTYPE login_view(const project::DatabaseModel& db);
 int main()
 {
-	school::DatabaseModel db("cls_db.txt", "std_db.txt", "prs_db.txt", "mrk_db.txt");
-	login:
-	USERTYPE type = login_view(db);
-	if (stop) return 1;
-	switch (type)
-	{
-	case USERTYPE::ADMIN:
-		AdminView admin_view(db);
-		admin_view.menu();
-		if (admin_view.is_exit_requested()) return 2;
-		else goto login;
-		break;
-	}
-	// ... USERTYPE::STUDENT ...
-
-	
+	project::DatabaseModel db("cls_db.txt", "std_db.txt", "prs_db.txt", "mrk_db.txt");
 	return 0;
 }
 
-USERTYPE login_view(const school::DatabaseModel& db)
+USERTYPE login_view(const project::DatabaseModel& db)
 {
 	std::string response;
 	std::string password;

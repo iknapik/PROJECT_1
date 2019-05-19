@@ -10,9 +10,9 @@
 #include <list>
 #include "Errors.h"
 
-namespace school {
+namespace project {
 
-	using namespace school;
+	using namespace project;
 	using namespace cheshire;
 
 	class DatabaseModel
@@ -96,6 +96,9 @@ namespace school {
 		void update(const ClassInfo& info); //throws DatabaseError with errorcode:  ErrorCode::INVALID_CLASS_ID, ErrorCode::DISSALOWED_CHARACTER
 		void update(const ProfessorInfo& info); //throws DatabaseError with errorcode:  ErrorCode::INVALID_PROFESSOR_ID, ErrorCode::DISSALOWED_CHARACTER
 		void update(const MarkInfo& info); //throws DatabaseError with errorcode:  ErrorCode::INVALID_STUDENT_ID, ErrorCode::DISSALOWED_CHARACTER, ErrorCode::INVALID_PROFESSOR_ID, ErrorCode::INVALID_MARK_ID
+		
+		//adding modifies info object to set correct id
+		//so after adding you can use added object to get id info.get_id()
 		template <class Info>
 		void add(Info& info);
 		

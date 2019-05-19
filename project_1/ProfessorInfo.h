@@ -3,7 +3,7 @@
 #include "BasicData.h"
 //#include <sstream>
 
-namespace school
+namespace project
 {
 const std::vector<std::string> PROFESSOR_FIELD_NAMES{"FIRSTNAME", "LASTNAME", "TITLE", "SUBJECTS"};
 
@@ -28,7 +28,7 @@ public:
 	uint get_id() const override {return m_id;}
 	std::vector<std::string> to_string_vector() const override
 	{
-		std::vector<std::string> vec(school::PROFESSOR_FIELD_NAMES.size());
+		std::vector<std::string> vec(project::PROFESSOR_FIELD_NAMES.size());
 		vec[0] = m_first_name;
 		vec[1] = m_last_name;
 		vec[2] = m_title;
@@ -44,10 +44,10 @@ public:
 	void from_map(uint id, const std::unique_ptr<std::map<const std::string, std::string>>& data) override
 	{
 		m_id = id;
-		m_first_name = data->at(school::PROFESSOR_FIELD_NAMES[0]);
-		m_last_name = data->at(school::PROFESSOR_FIELD_NAMES[1]);
-		m_title = data->at(school::PROFESSOR_FIELD_NAMES[2]);
-		std::istringstream stream(data->at(school::PROFESSOR_FIELD_NAMES[3]));
+		m_first_name = data->at(project::PROFESSOR_FIELD_NAMES[0]);
+		m_last_name = data->at(project::PROFESSOR_FIELD_NAMES[1]);
+		m_title = data->at(project::PROFESSOR_FIELD_NAMES[2]);
+		std::istringstream stream(data->at(project::PROFESSOR_FIELD_NAMES[3]));
 		std::string str;
 		m_subjects.clear();
 		while(stream >> str)

@@ -7,7 +7,7 @@
 
 // that class can generate random database items and populate database with it
 
-using namespace school;
+using namespace project;
 
 class Random
 {

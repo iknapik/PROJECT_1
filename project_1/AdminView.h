@@ -5,11 +5,11 @@
 
 class AdminView
 {
-	school::DatabaseModel& m_db;
+	project::DatabaseModel& m_db;
 	bool m_stop = false;
 	std::string m_response;
 public:
-	explicit AdminView(school::DatabaseModel& database) : m_db(database) {}
+	explicit AdminView(project::DatabaseModel& database) : m_db(database) {}
 	void menu();
 	bool is_exit_requested() { return m_stop; }
 private:

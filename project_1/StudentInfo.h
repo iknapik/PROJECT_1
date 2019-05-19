@@ -11,7 +11,7 @@
 //Simple lightweigh class that stores data about students
 //implements BasicData iterface to work with BaseDao
 
-namespace school
+namespace project
 {
 // make sure to pass this vector to BaseDao constructor
 // or from_map will be throwing out_of_range exceptions
@@ -70,12 +70,12 @@ public:
 		if (map->empty()) return;
 
 		m_id = id;
-		m_firstname = map->at(school::STUDENT_FIELD_NAMES[0]);
-		m_lastname = map->at(school::STUDENT_FIELD_NAMES[1]);
-		m_PESEL = map->at(school::STUDENT_FIELD_NAMES[2]);
-		m_city = map->at(school::STUDENT_FIELD_NAMES[3]);
-		m_address = map->at(school::STUDENT_FIELD_NAMES[4]);
-		m_class_id = std::stoul(map->at(school::STUDENT_FIELD_NAMES[5]));
+		m_firstname = map->at(project::STUDENT_FIELD_NAMES[0]);
+		m_lastname = map->at(project::STUDENT_FIELD_NAMES[1]);
+		m_PESEL = map->at(project::STUDENT_FIELD_NAMES[2]);
+		m_city = map->at(project::STUDENT_FIELD_NAMES[3]);
+		m_address = map->at(project::STUDENT_FIELD_NAMES[4]);
+		m_class_id = std::stoul(map->at(project::STUDENT_FIELD_NAMES[5]));
 	}
 	unsigned get_id() const override { return m_id; }	
 	//****************** </INTERFACE IMPLEMENTATION> ******************//

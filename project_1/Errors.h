@@ -2,7 +2,7 @@
 #define ERORRS_H_
 #include <exception>
 
-namespace school
+namespace project
 {
 	enum class ErrorCode
 	{
