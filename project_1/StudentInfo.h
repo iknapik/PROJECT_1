@@ -30,9 +30,9 @@ public:
 	std::string m_PESEL;
 	std::string m_city;
 	std::string m_address;
-	std::string m_password;
 	uint m_class_id;
 private:
+	std::string m_password;
 	uint m_id = 0;
 public:
 	StudentInfo() {}
@@ -47,6 +47,7 @@ public:
 		Random rand;
 		m_password = rand.token(10);
 	}
+	const std::string& get_password() const { return m_password; }
 	bool empty() const { return m_firstname.empty(); }
 
 	unsigned get_class_id() const { return m_class_id; }
@@ -61,14 +62,14 @@ public:
 	void set_id(uint id) override { m_id = id; }
 	std::vector<std::string> to_string_vector() const override
 	{
-		std::vector<std::string> vec(6);
+		std::vector<std::string> vec(7);
 		vec[0] = m_firstname;
 		vec[1] = m_lastname;
 		vec[2] = m_PESEL;
 		vec[3] = m_city;
 		vec[4] = m_address;
 		vec[5] = std::to_string(m_class_id);
-		vec[5] = m_password;
+		vec[6] = m_password;
 			return vec;
 	};
 	void from_map(unsigned id, const std::unique_ptr<std::map<const std::string, std::string>>& map) override

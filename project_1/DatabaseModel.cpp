@@ -7,6 +7,7 @@ using namespace project;
 
 DatabaseModel::DatabaseModel(const std::string& class_db_name, const std::string& stud_db_name, const std::string& prof_db_name, const std::string& mark_db_name)
 {
+
 	m_classdao = std::make_unique<BaseDao<ClassInfo>>(class_db_name.c_str(), CLASS_FIELD_NAMES);
 	m_sdao = std::make_unique<BaseDao<StudentInfo>>(stud_db_name.c_str(), STUDENT_FIELD_NAMES);
 	m_profdao = std::make_unique<BaseDao<ProfessorInfo>>(prof_db_name.c_str(), PROFESSOR_FIELD_NAMES);
@@ -17,9 +18,9 @@ DatabaseModel::DatabaseModel(const std::string& class_db_name, const std::string
 	m_classes_ptr = m_classdao->get_rows();
 	m_students_ptr = m_sdao->get_rows();
 
-	m_slookup = std::make_unique<std::map<unsigned, std::string>>();
-	m_mark_student_lookup = std::make_unique < std::unordered_map<unsigned, std::set<unsigned>>>();
-	m_mark_professor_lookup = std::make_unique < std::unordered_map<unsigned, std::set<unsigned>>>();
+	m_slookup = std::make_unique<std::map<uint, std::string>>();
+	m_mark_student_lookup = std::make_unique < std::unordered_map<uint, std::set<uint>>>();
+	m_mark_professor_lookup = std::make_unique < std::unordered_map<uint, std::set<uint>>>();
 	
 	auto file = std::ifstream("passwords.txt", std::ios::in);
 	if (file.fail()) { m_admin_password = "admin"; m_professor_password = "professor"; m_student_password = "student"; save_password(); }
@@ -43,6 +44,7 @@ DatabaseModel::DatabaseModel(const std::string& class_db_name, const std::string
 		m_mark_student_lookup->at(pair.second->m_student_id).insert(pair.first);
 		m_mark_professor_lookup->at(pair.second->m_professor_id).insert(pair.first);
 	}
+
 }
 
 // getters for add/remove/update //

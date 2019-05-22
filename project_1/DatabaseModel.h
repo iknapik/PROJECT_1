@@ -157,7 +157,7 @@ private:
 				if (*beg != chr && *end != chr) break;
 			}
 			if (end == beg && chr == *beg) return std::string();
-			return std::string(beg, end);
+			return std::string(beg, end + 1);
 		}
 		
 	};

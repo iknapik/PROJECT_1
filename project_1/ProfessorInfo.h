@@ -18,6 +18,7 @@ public:
 	std::string m_last_name;
 	std::string m_title;
 	std::vector<std::string> m_subjects;
+public:
 	ProfessorInfo() {}
 	ProfessorInfo(const std::string& firstname, const std::string& lastname, const std::string& title, const std::vector<std::string>& subjects):
 		m_first_name(firstname),
@@ -28,6 +29,7 @@ public:
 		Random rand;
 		m_password = rand.token(10);
 	}
+	const std::string& get_password() const { return m_password; }
 	//***********INTERFACE IMPLEMENTATION****************//
 	void set_id(uint id) override {m_id = id;}
 	uint get_id() const override {return m_id;}

@@ -15,7 +15,7 @@
 #include <chrono>
 #include <iomanip>
 #include <random>
-/*template <class T>
+template <class T>
 	void assert_throw(T func, project::ErrorCode ec)
 	{
 		bool passed = false;
@@ -36,7 +36,7 @@
 		assert(passed);
 
 	}
-*/
+
 
 // timer class made just for testing purposes
 class Timer
@@ -200,7 +200,8 @@ int main()
 
 
 
-		std::string str = "10w";
+
+		std::string str{ "10w" };
 		std::cout << "\nStudenci w danej klasie:\n====================================\n";
 		// wyciągamy studentów z danej klasy, możemy również po prostu podać class id
 		for (auto &stud : db.get_students_by_class(str))
