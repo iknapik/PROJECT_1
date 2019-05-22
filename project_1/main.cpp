@@ -21,20 +21,32 @@ bool is_exit_requested(std::string_view str)
 
 //helper for geting userinput
 void get_response(std::string& buffer);
+void clean_db()
+{
+	std::remove("std_db.txt");
+	std::remove("id_std_db.txt");
+	std::remove("mrk_db.txt");
+	std::remove("id_mrk_db.txt");
+	std::remove("prs_db.txt");
+	std::remove("id_prs_db.txt");
+	std::remove("cls_db.txt");
+	std::remove("id_cls_db.txt");
+}
 
 //view where user can login returns info about privileges
 USERTYPE login_view(const project::DatabaseModel& db);
 int main()
 {
+	clean_db();
 	project::DatabaseModel db("cls_db.txt", "std_db.txt", "prs_db.txt", "mrk_db.txt");
-	/* //generator if you want for testing
+		 //generator if you want for testing
 	const unsigned students = 200;
 	const unsigned classes = 10;
 	const unsigned professors = 20;
 	const unsigned marks = 1000;
 	Generator gen(students, classes, professors, marks);
 	gen.populate(db);
-	*/
+	
 
 
 	login:

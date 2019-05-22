@@ -15,7 +15,7 @@
 #include <chrono>
 #include <iomanip>
 #include <random>
-template <class T>
+/*template <class T>
 	void assert_throw(T func, project::ErrorCode ec)
 	{
 		bool passed = false;
@@ -36,7 +36,7 @@ template <class T>
 		assert(passed);
 
 	}
-
+*/
 
 // timer class made just for testing purposes
 class Timer
