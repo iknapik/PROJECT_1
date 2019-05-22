@@ -1,7 +1,7 @@
 // project_1.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 // comment out if you don't want to run tests
-#define TESTS
+//#define TESTS
 // -------------------------------------------
 #ifdef TESTS
 #include "Generator.h"
@@ -15,8 +15,8 @@
 #include <chrono>
 #include <iomanip>
 #include <random>
-template <class T>
-	void assert_throw(T func, ErrorCode ec)
+/*template <class T>
+	void assert_throw(T func, project::ErrorCode ec)
 	{
 		bool passed = false;
 		unsigned id = 0;
@@ -26,7 +26,7 @@ template <class T>
 
 			func();
 		}
-		catch (const DatabaseError& err)
+		catch (const project::DatabaseError& err)
 		{
 			if (err.error_code() == ec) passed = true;
 			mes = err.what();
@@ -36,7 +36,7 @@ template <class T>
 		assert(passed);
 
 	}
-
+*/
 
 // timer class made just for testing purposes
 class Timer
@@ -64,7 +64,7 @@ public:
 };
 
 
-using namespace school;
+using namespace project;
 using namespace cheshire;
 
 
@@ -103,12 +103,14 @@ int main()
 		ClassInfo class2{ "14j", 1 };
 		ClassInfo class3{ "10w", 5 };
 		//tworzymy profesora {Imie, Nazwisko, Tytuł, {przedm1, przedm2, ...}}
+		//przedmioty to zwykłe stringi co sie wpisze będzie ok
 		ProfessorInfo prof1{ "Tomasz", "Szybki", "Mgr", {"MD", "PE"} };
 		ProfessorInfo prof2{ "Kamil", "Wozniak", "Dr", {"MD", "PE"} };
 		ProfessorInfo prof3{ "Wojciech", "Kowalski", "Inz", {"MD", "PE"} };
 		ProfessorInfo prof4{ "Adam", "Miły", "Inż", {"MD", "PE"} };
 		ProfessorInfo prof5{ "Marek", "Marecki", "Mgr", {"MD", "PE"} };
 		//tworzymy ocene{id studenta, enum MARK - czyli ocena, data, enum SUBJECT - czyli przedmiot, id nauczyciela}
+		//data to zwykły string
 		MarkInfo mark1{ 1, MARK::_4, "04-01-2019", SUBJECT::MD, 3 };
 		MarkInfo mark2{ 2, MARK::_5, "05-01-2019", SUBJECT::PE, 2 };
 		MarkInfo mark3{ 3, MARK::_3_5, "06-01-2019", SUBJECT::PP, 1 };
@@ -116,14 +118,34 @@ int main()
 		MarkInfo mark5{ 4, MARK::_2_5, "08-01-2019", SUBJECT::PP, 3 };
 		//dodajemy do bazy danych za pomocą przeładowanych funkcji
 
-		db.add(class1);
-		db.add(class2);
-		db.add(class3);
-		db.add(prof1);
-		db.add(prof2);
-		db.add(prof3);
-		db.add(prof4);
-		db.add(prof5);
+		//PRZY DODAWANIU NIE JEST POTRZEBNE USTALENIE ID
+		//baza danych automatycznie przydziela ID, funkcja add modyfikuje obiekt nadająć mu odpowiednie ID
+		//czyli po dodaniu db.add(class1); można użyć class1.get_id() aby uzyskać ID 
+
+		try
+		{
+			db.add(class1);
+			db.add(class2);
+			db.add(class3);
+		}
+		catch (const DatabaseError& err)
+		{
+			std::cout << "Bład dodawania klasy, wiadomość błedu: " << err.what() << " " << err.id();
+			//jeżeli kod błedu dotyczy id err.id() wyświetla id które spowodawało bład
+			//jeżeli kod błedu nie dotyczy id err.id() zwraca 0
+		}
+		try
+		{
+			db.add(prof1);
+			db.add(prof2);
+			db.add(prof3);
+			db.add(prof4);
+			db.add(prof5);
+		}
+		catch (const DatabaseError& err)
+		{
+			std::cout << "Błąd dodawania profesora, wiadomość błedu: " << err.what() << " " << err.id();
+		}
 
 		// przy dodawaniu studenta może wywalić exception gdy klasa podana w StudentInfo nie istnieje
 		// dodawanie studenta aktualizuje StudentInfo w poprawne ID
@@ -138,17 +160,38 @@ int main()
 			}
 			catch (const DatabaseError& err)
 			{
-				std::cout << err.what() << " " << err.id() << "\n";
+				std::cout << "Bład dodwania studenta, wiadomość błedu: " << err.what() << " " << err.id() << "\n";
 			}
 			stud1.m_firstname = "Michał" + std::to_string(i);
 			stud1.m_class_id = i % 4 + 1;
 		}
 		//przy dodawaniu marka może wywalić exception gdy id studenta lub profesora nie istnieją
-		db.add(mark1);
-		db.add(mark2);
-		db.add(mark3);
-		db.add(mark4);
-		db.add(mark5);
+		try
+		{
+			db.add(mark1);
+			db.add(mark2);
+			db.add(mark3);
+			db.add(mark4);
+			db.add(mark5);
+		}
+		catch (const DatabaseError& err)
+		{
+			//WERSJA OGOLNA:
+			//std::cout << "Bład dodawania oceny, wiadomość błedu: " << err.what() << " " << err.id();
+			
+			//WERSJA SZEGÓŁOWA:
+			switch (err.error_code())
+			{
+			case ErrorCode::INVALID_STUDENT_ID:
+				std::cout << "Bład dodawania oceny, podano niewłaściwe id studenta! id: " << err.id();
+				break;
+			case ErrorCode::INVALID_PROFESSOR_ID:
+				std::cout << "Bład dodawania oceny, podano niewłaściwe id profesora! id: " << err.id();
+				break;
+			default:
+				std::cout << "Bład dodawania oceny: " << err.what() << " " << err.id();
+			}
+		}
 	}
 	// ponowne ładowanie bazy danych jako symulacja ponownego otworzenia aplikacji
 	{

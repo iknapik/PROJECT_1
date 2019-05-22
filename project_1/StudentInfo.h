@@ -7,15 +7,16 @@
 #include <vector>
 #include <map>
 #include "BasicData.h"
+#include "Random.h"
 
 //Simple lightweigh class that stores data about students
 //implements BasicData iterface to work with BaseDao
 
-namespace school
+namespace project
 {
 // make sure to pass this vector to BaseDao constructor
 // or from_map will be throwing out_of_range exceptions
-const std::vector<std::string> STUDENT_FIELD_NAMES{"FIRSTNAME", "LASTNAME", "PESEL", "CITY", "ADDRESS", "CLASS_ID"};
+const std::vector<std::string> STUDENT_FIELD_NAMES{"FIRSTNAME", "LASTNAME", "PESEL", "CITY", "ADDRESS", "CLASS_ID", "PASSWORD"};
 
 
 class StudentInfo : public cheshire::BasicData
@@ -29,6 +30,7 @@ public:
 	std::string m_PESEL;
 	std::string m_city;
 	std::string m_address;
+	std::string m_password;
 	uint m_class_id;
 private:
 	uint m_id = 0;
@@ -41,7 +43,10 @@ public:
 		m_city(city),
 		m_address(address),
 		m_class_id(class_id)
-	{}
+	{
+		Random rand;
+		m_password = rand.token(10);
+	}
 	bool empty() const { return m_firstname.empty(); }
 
 	unsigned get_class_id() const { return m_class_id; }
@@ -63,6 +68,7 @@ public:
 		vec[3] = m_city;
 		vec[4] = m_address;
 		vec[5] = std::to_string(m_class_id);
+		vec[5] = m_password;
 			return vec;
 	};
 	void from_map(unsigned id, const std::unique_ptr<std::map<const std::string, std::string>>& map) override
@@ -70,12 +76,13 @@ public:
 		if (map->empty()) return;
 
 		m_id = id;
-		m_firstname = map->at(school::STUDENT_FIELD_NAMES[0]);
-		m_lastname = map->at(school::STUDENT_FIELD_NAMES[1]);
-		m_PESEL = map->at(school::STUDENT_FIELD_NAMES[2]);
-		m_city = map->at(school::STUDENT_FIELD_NAMES[3]);
-		m_address = map->at(school::STUDENT_FIELD_NAMES[4]);
-		m_class_id = std::stoul(map->at(school::STUDENT_FIELD_NAMES[5]));
+		m_firstname = map->at(project::STUDENT_FIELD_NAMES[0]);
+		m_lastname = map->at(project::STUDENT_FIELD_NAMES[1]);
+		m_PESEL = map->at(project::STUDENT_FIELD_NAMES[2]);
+		m_city = map->at(project::STUDENT_FIELD_NAMES[3]);
+		m_address = map->at(project::STUDENT_FIELD_NAMES[4]);
+		m_class_id = std::stoul(map->at(project::STUDENT_FIELD_NAMES[5]));
+		m_password = map->at(project::STUDENT_FIELD_NAMES[6]);
 	}
 	unsigned get_id() const override { return m_id; }	
 	//****************** </INTERFACE IMPLEMENTATION> ******************//

@@ -3,7 +3,7 @@
 #include "BasicData.h"
 #include <iostream>
 
-namespace school
+namespace project
 {
 	const std::vector<std::string> MARK_FIELD_NAMES{"STUDENT_ID", "VALUE", "DATE", "SUBJECT", "PROFESSOR_ID"};
 
@@ -40,7 +40,7 @@ namespace school
 		uint get_id() const override {return m_id;}
 		std::vector<std::string> to_string_vector() const override
 		{
-			std::vector<std::string> vec(school::MARK_FIELD_NAMES.size());
+			std::vector<std::string> vec(project::MARK_FIELD_NAMES.size());
 			vec[0] = std::to_string(m_student_id);
 			vec[1] = std::to_string(static_cast<short>(m_value));
 			vec[2] = m_date;
@@ -51,14 +51,14 @@ namespace school
 		void from_map(unsigned id, const std::unique_ptr<std::map<const std::string, std::string>>& data)
 		{
 			m_id = id;
-			m_student_id = std::stoul(data->at(school::MARK_FIELD_NAMES[0]));
-			m_value = school::MARK(std::stoi(data->at(school::MARK_FIELD_NAMES[1])));
-			m_date = data->at(school::MARK_FIELD_NAMES[2]);
-			m_subject = school::SUBJECT(std::stoi(data->at(school::MARK_FIELD_NAMES[3])));
-			m_professor_id = std::stoul(data->at(school::MARK_FIELD_NAMES[4]));
+			m_student_id = std::stoul(data->at(project::MARK_FIELD_NAMES[0]));
+			m_value = project::MARK(std::stoi(data->at(project::MARK_FIELD_NAMES[1])));
+			m_date = data->at(project::MARK_FIELD_NAMES[2]);
+			m_subject = project::SUBJECT(std::stoi(data->at(project::MARK_FIELD_NAMES[3])));
+			m_professor_id = std::stoul(data->at(project::MARK_FIELD_NAMES[4]));
 		}
 		//******************************************************//
-		friend std::ostream& operator<<(std::ostream& out, const school::MarkInfo& mark)
+		friend std::ostream& operator<<(std::ostream& out, const project::MarkInfo& mark)
 		{
 			out << "student_id:" << mark.m_student_id << " value: " << static_cast<float>(mark.m_value) / 2 << " subject: " << static_cast<short>(mark.m_subject);
 			return out;

@@ -7,7 +7,7 @@
 #include <set>
 #include <iostream>
 
-namespace school {
+namespace project {
 	const std::vector<std::string> CLASS_FIELD_NAMES{ "CLASS_NAME", "SEMESTER" };
 
 	class ClassInfo : public cheshire::BasicData

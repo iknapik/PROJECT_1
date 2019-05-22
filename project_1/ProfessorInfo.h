@@ -1,16 +1,18 @@
 #ifndef PROFESSORINFO_H_
 #define PROFESSORINFO_H_
 #include "BasicData.h"
+#include "Random.h"
 //#include <sstream>
 
-namespace school
+namespace project
 {
-const std::vector<std::string> PROFESSOR_FIELD_NAMES{"FIRSTNAME", "LASTNAME", "TITLE", "SUBJECTS"};
+const std::vector<std::string> PROFESSOR_FIELD_NAMES{"FIRSTNAME", "LASTNAME", "TITLE", "SUBJECTS", "PASSWORD"};
 
 class ProfessorInfo : public cheshire::BasicData
 {
 	typedef unsigned uint;
 	uint m_id = 0;
+	std::string m_password;
 public:
 	std::string m_first_name;
 	std::string m_last_name;
@@ -22,16 +24,20 @@ public:
 		m_last_name(lastname),
 		m_title(title),
 		m_subjects(subjects)
-	{}
+	{
+		Random rand;
+		m_password = rand.token(10);
+	}
 	//***********INTERFACE IMPLEMENTATION****************//
 	void set_id(uint id) override {m_id = id;}
 	uint get_id() const override {return m_id;}
 	std::vector<std::string> to_string_vector() const override
 	{
-		std::vector<std::string> vec(school::PROFESSOR_FIELD_NAMES.size());
+		std::vector<std::string> vec(project::PROFESSOR_FIELD_NAMES.size());
 		vec[0] = m_first_name;
 		vec[1] = m_last_name;
 		vec[2] = m_title;
+		vec[4] = m_password;
 		std::ostringstream stream;
 		for(auto& i : m_subjects)
 		{
@@ -43,11 +49,12 @@ public:
 
 	void from_map(uint id, const std::unique_ptr<std::map<const std::string, std::string>>& data) override
 	{
+		m_password = data->at(project::PROFESSOR_FIELD_NAMES[4]);
 		m_id = id;
-		m_first_name = data->at(school::PROFESSOR_FIELD_NAMES[0]);
-		m_last_name = data->at(school::PROFESSOR_FIELD_NAMES[1]);
-		m_title = data->at(school::PROFESSOR_FIELD_NAMES[2]);
-		std::istringstream stream(data->at(school::PROFESSOR_FIELD_NAMES[3]));
+		m_first_name = data->at(project::PROFESSOR_FIELD_NAMES[0]);
+		m_last_name = data->at(project::PROFESSOR_FIELD_NAMES[1]);
+		m_title = data->at(project::PROFESSOR_FIELD_NAMES[2]);
+		std::istringstream stream(data->at(project::PROFESSOR_FIELD_NAMES[3]));
 		std::string str;
 		m_subjects.clear();
 		while(stream >> str)

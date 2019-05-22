@@ -5,11 +5,11 @@
 class StudentView
 
 {
-	const school::StudentInfo m_sinfo;
-	const school::DatabaseModel& m_db;
+	const project::StudentInfo m_sinfo;
+	const project::DatabaseModel& m_db;
 	bool stop = false;
 public:
-	StudentView(const school::DatabaseModel& db, unsigned id) : m_db(db), m_sinfo(db.get_by_id<school::StudentInfo>(id)) {}
+	StudentView(const project::DatabaseModel& db, unsigned id) : m_db(db), m_sinfo(db.get_by_id<project::StudentInfo>(id)) {}
 	void menu();
 	void marks_view();
 	void personal_information();
