@@ -4,6 +4,7 @@
 #include <string_view>
 #include "AdminView.h"
 #include "Generator.h"
+#include "StudentView.h"
 
 
 bool stop = false;
@@ -13,14 +14,19 @@ enum class USERTYPE
 {
 	ADMIN, PROFESSOR, STUDENT
 };
-bool is_exit_requested(std::string_view str)
+bool is_exit_requested(std::string str)
 {
-	if (str == "q" || str == "exit" || str == "Q" || str == "quit") { stop = true; return true; }
+	if (str == "Q" || str == "EXIT" || str == "QUIT") { stop = true; return true; }
 	return false;
 }
 
 //helper for geting userinput
 void get_response(std::string& buffer);
+//<<<<<<< HEAD
+std::string zmiana(std::string& ciag);
+unsigned get_id_from_pesel(const project::DatabaseModel& db, const std::string& str);
+//bool pass(std::string ciag, std::string passw);
+//=======
 void clean_db()
 {
 	std::remove("std_db.txt");
@@ -33,11 +39,12 @@ void clean_db()
 	std::remove("id_cls_db.txt");
 	std::remove("passwords.txt");
 }
+//>>>>>>> 82c63ab01d037b4beb851d45cac974563b7bcb43
 
 //view where user can login returns info about privileges
-USERTYPE login_view(const project::DatabaseModel& db);
+USERTYPE login_view(const project::DatabaseModel& db, std::string& response);
 int main()
-{
+{   std::string response;
 	clean_db();
 	project::DatabaseModel db("cls_db.txt", "std_db.txt", "prs_db.txt", "mrk_db.txt");
 	 //generator if you want for testing
@@ -49,54 +56,90 @@ int main()
 	gen.populate(db);
 
 	login:
-	USERTYPE type = login_view(db);
+	USERTYPE type = login_view(db,response);
+    unsigned ID=get_id_from_pesel(db,response);
+	// tymczasowe rozwiązanie: :D
+	// ID = 100;
 	if (stop) return 1;
 	switch (type)
 	{
 	case USERTYPE::ADMIN:
-		AdminView admin_view(db);
+        {AdminView admin_view(db);
 		admin_view.menu();
 		if (admin_view.is_exit_requested()) return 2;
 		else goto login;
-		break;
-	}
-	// ... USERTYPE::STUDENT ...
+            break;}
+    case USERTYPE::STUDENT:
+        {StudentView student_view(db,ID);
+            student_view.menu();
+            if (student_view.get_stop()) return 2;
+    else goto login;
+            break;}
+    /*
+    case USERTYPE::PROFESSOR:
+        ProfessorView professor_view(db);
+        professor_view.menu();
+    if (aprofessor_view.is_exit_requested()) return 2;
+    else goto login;
+    break;
+	}*/
 
-	
+    }
 	return 0;
 }
 
-USERTYPE login_view(const project::DatabaseModel& db)
+USERTYPE login_view(const project::DatabaseModel& db, std::string& response)
 {
-	std::string response;
+    //std::string response;
 	std::string password;
 	USERTYPE type;
-	std::cout << "q|Q|exit|quit for exit\n";
+    std::cout<<"--- Welcome to the online register ---"<<std::endl;
+    std::cout<<std::endl;
+    std::cout << "If you want to leave, press q|exit|quit\n";
+    std::cout<<"Type your Username: Admin|Professor|Student"<<std::endl;
+	
 	username:
-	std::cout << "Username: Admin|Professor|Student\n";
 	while (true)
 	{
 		get_response(response);
+        zmiana(response);
+        
 		if (is_exit_requested(response)) { stop = true; return USERTYPE::STUDENT; }
-		if (response == "Admin") { password = db.get_admin_password(); type = USERTYPE::ADMIN;	break; }
-		else if (response == "Professor") { password = db.get_professor_password();	type = USERTYPE::PROFESSOR; break; }
-		else if (response == "Student") { password = db.get_student_password(); type = USERTYPE::STUDENT;	break; }
+        if (response == "ADMIN") { password = db.get_admin_password(); type = USERTYPE::ADMIN;	break; }
+		else if (response == "PROFESSOR") { password = db.get_professor_password();	type = USERTYPE::PROFESSOR; break; }
+		else if (response == "STUDENT") { password = db.get_student_password(); type = USERTYPE::STUDENT;	break; }
 		std::cout << "Try again\n";
 	}
+    
 	if (password.empty())
 	{
 		std::cout << "Password not set!\n";
 		goto username;
 	}
-	std::cout << "Password:\n";
-	while (true)
-	{
+    
+  
+    int i =1;
+password_:
+    while(true)
+    {
+        std::cout << "Password:\n";
+	
 		get_response(response);
 		if (is_exit_requested(response)) { stop = true; return USERTYPE::STUDENT; }
-		if (response == password) { std::cout << "access granted!\n"; return type; }
-		std::cout << "Wrong password!\n";
-	}
+		if (response==password) { std::cout << "access granted!\n"; return type; }
+        else {std::cout<< "Wrong password!";
+            if(i<3)
+            {std::cout<<" This is your "<<i<<" attempt, only "<<3-i<<" left!"<<std::endl;}
+            if(i==3)
+            {std::cout<<" Your account has been blocked, please contact with the administrator"<<std::endl;
+                stop = true; return USERTYPE::STUDENT;}
+            i++;
+            goto password_;}
+        //chcialam zrobic kolorki, ze taki czerwony error, ale u mnie nie dziala: "\33[0;31m" << "Wrong password!" << "\33[0m"
+    }
+    
 }
+
 void get_response(std::string& buffer)
 {
 	while (true) 
@@ -106,8 +149,61 @@ void get_response(std::string& buffer)
 		{
 			std::cin.clear();
 			std::cin.ignore(32767, '\n');
-			continue;
+			//continue;
 		}
 		break;
 	}
+    
 }
+
+
+//sprawia ze username i exit nie jest czuly na wielkosc liter
+std::string zmiana(std::string& ciag)
+{ int i=0;
+    
+    while(ciag[i]!=0)
+    {
+        if (ciag[i]>96 && ciag[i]<122)
+        {
+            ciag[i]=(ciag[i]-32);
+        }
+        i++;
+    }
+    return ciag;
+}
+
+
+unsigned get_id_from_pesel(const project::DatabaseModel& db, const std::string& str)
+{
+    auto stud_list = db.find_students(str);
+    if (!stud_list.empty())
+    {
+        if (stud_list.size() == 1)
+            return stud_list.begin()->get_id();
+        //nie wiem w sumie czy elsy sa nam tu potrzebne bo juz haslo samo w sobie sprawdza poprawnosc pesela, jakby byl on bledny lub nie bylo wynikow to bysmy sie nie zalogowali
+        else
+        {
+            // za dużo wyników, przykładowo jak ktos wpisze 932 tylko
+            return 0;
+        }
+    }
+    else //brak wyników
+        return 0;
+}
+
+
+/*
+bool pass(std::string ciag, std::string passw)
+{
+    if(sizeof(ciag)==11 && ciag == passw)
+        return true;
+    else if(sizeof(ciag)<11)
+    {std::cout<<"Password is too short, please try again"<<std::endl;
+        return false;}
+    else if(sizeof(ciag)>11)
+    {std::cout<<"Password is too long, please try again"<<std::endl;
+        return false;}
+    
+    
+}
+ */
