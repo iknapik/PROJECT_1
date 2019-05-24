@@ -1,7 +1,7 @@
 // project_1.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 // comment out if you don't want to run tests
-//#define TESTS
+#define TESTS
 // -------------------------------------------
 #ifdef TESTS
 #include "Generator.h"
@@ -104,11 +104,11 @@ int main()
 		ClassInfo class3{ "10w", 5 };
 		//tworzymy profesora {Imie, Nazwisko, Tytuł, {przedm1, przedm2, ...}}
 		//przedmioty to zwykłe stringi co sie wpisze będzie ok
-		ProfessorInfo prof1{ "Tomasz", "Szybki", "Mgr", {"MD", "PE"} };
-		ProfessorInfo prof2{ "Kamil", "Wozniak", "Dr", {"MD", "PE"} };
-		ProfessorInfo prof3{ "Wojciech", "Kowalski", "Inz", {"MD", "PE"} };
-		ProfessorInfo prof4{ "Adam", "Miły", "Inż", {"MD", "PE"} };
-		ProfessorInfo prof5{ "Marek", "Marecki", "Mgr", {"MD", "PE"} };
+		ProfessorInfo prof1{ "Tomasz", "Szybki", "Mgr", {"MD", "PE"} , "93193919221"};
+		ProfessorInfo prof2{ "Kamil", "Wozniak", "Dr", {"MD", "PE"} , "93193912221"};
+		ProfessorInfo prof3{ "Wojciech", "Kowalski", "Inz", {"MD", "PE"} , "93299221"};
+		ProfessorInfo prof4{ "Adam", "Miły", "Inż", {"MD", "PE"} , "93193919222"};
+		ProfessorInfo prof5{ "Marek", "Marecki", "Mgr", {"MD", "PE"} , "93133619221"};
 		//tworzymy ocene{id studenta, enum MARK - czyli ocena, data, enum SUBJECT - czyli przedmiot, id nauczyciela}
 		//data to zwykły string
 		MarkInfo mark1{ 1, MARK::_4, "04-01-2019", SUBJECT::MD, 3 };
@@ -130,7 +130,7 @@ int main()
 		}
 		catch (const DatabaseError& err)
 		{
-			std::cout << "Bład dodawania klasy, wiadomość błedu: " << err.what() << " " << err.id();
+			std::cout << "Bład dodawania klasy, wiadomość błedu: " << err.what() << " " << err.id() << "\n";
 			//jeżeli kod błedu dotyczy id err.id() wyświetla id które spowodawało bład
 			//jeżeli kod błedu nie dotyczy id err.id() zwraca 0
 		}
@@ -144,7 +144,7 @@ int main()
 		}
 		catch (const DatabaseError& err)
 		{
-			std::cout << "Błąd dodawania profesora, wiadomość błedu: " << err.what() << " " << err.id();
+			std::cout << "Błąd dodawania profesora, wiadomość błedu: " << err.what() << " " << err.id() << "\n";
 		}
 
 		// przy dodawaniu studenta może wywalić exception gdy klasa podana w StudentInfo nie istnieje
@@ -289,7 +289,7 @@ int main()
 			timer.reset();
 			std::cout << "Save, write test... " << std::flush;
 			DatabaseModel db{};
-			StudentInfo sinfo("Michael", "Jordan", "31831888", "Gomoria,", "asdasd 213");
+			StudentInfo sinfo("Michael", "Jordan", "90909090901", "Gomoria,", "asdasd 213");
 			typedef void (DatabaseModel::*ups)(const StudentInfo&);
 			typedef void (DatabaseModel::*upc)(const ClassInfo&);
 			typedef void (DatabaseModel::*upp)(const ProfessorInfo&);
@@ -457,7 +457,7 @@ int main()
 				MarkInfo minfo = *(db.get_all<MarkInfo>().begin()->second);
 				cinfo.m_name = "14i,";
 				pinfo.m_subjects[0] = "MD,";
-				sinfo.m_PESEL = "9891231,";
+				sinfo.m_address = "Zielna,29";
 				minfo.m_date = "12,03,2019";
 				assert_throw(std::bind(&DatabaseModel::add<ClassInfo>, &db, cinfo), ErrorCode::DISSALOWED_CHARACTER);
 				assert_throw(std::bind(&DatabaseModel::add<ProfessorInfo>, &db, pinfo), ErrorCode::DISSALOWED_CHARACTER);
@@ -467,8 +467,8 @@ int main()
 				assert_throw(std::bind(update_p, &db, pinfo), ErrorCode::DISSALOWED_CHARACTER);
 				assert_throw(std::bind(update_s, &db, sinfo), ErrorCode::DISSALOWED_CHARACTER);
 				assert_throw(std::bind(update_m, &db, minfo), ErrorCode::DISSALOWED_CHARACTER);
-				StudentInfo sinfo_id("H", "H", "H", "H", "H", cinfo.get_id());
-				ProfessorInfo pinfo_id("H", "H", "H", { "ff" });
+				StudentInfo sinfo_id("H", "H", "92313131113", "H", "H", cinfo.get_id());
+				ProfessorInfo pinfo_id("H", "H", "H", { "ff" }, "29192919999");
 				ClassInfo cinfo_id("ale", 3);
 				MarkInfo minfo_id(sinfo.get_id(), MARK::_2_5, "fafaf", SUBJECT::MD, pinfo.get_id());
 				assert_throw(std::bind(update_c, &db, cinfo_id), ErrorCode::INVALID_CLASS_ID);
@@ -487,6 +487,16 @@ int main()
 				assert_throw(std::bind(&DatabaseModel::get_by_id<ClassInfo>, &db, 9999999), ErrorCode::INVALID_ID);
 				assert_throw(std::bind(&DatabaseModel::get_by_id<MarkInfo>, &db, 9999999), ErrorCode::INVALID_ID);
 				assert_throw(std::bind(&DatabaseModel::get_by_id<ProfessorInfo>, &db, 9999999), ErrorCode::INVALID_ID);
+
+				pinfo = *(db.get_all<ProfessorInfo>().begin()->second);
+				sinfo = *(db.get_all<StudentInfo>().begin()->second);
+				pinfo.m_PESEL = "09312";
+				sinfo.m_PESEL = "fjafa";
+
+				assert_throw(std::bind(&DatabaseModel::add<ProfessorInfo>, &db, pinfo), ErrorCode::INVALID_PESEL);
+				assert_throw(std::bind(&DatabaseModel::add<StudentInfo>, &db, sinfo), ErrorCode::INVALID_PESEL);
+				assert_throw(std::bind(update_p, &db, pinfo), ErrorCode::INVALID_PESEL);
+				assert_throw(std::bind(update_s, &db, sinfo), ErrorCode::INVALID_PESEL);
 				assert(db.check_integrity());
 				std::cout << " Done!\n";
 				timer.elapsed();

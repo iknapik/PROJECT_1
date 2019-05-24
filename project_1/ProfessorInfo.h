@@ -6,7 +6,7 @@
 
 namespace project
 {
-const std::vector<std::string> PROFESSOR_FIELD_NAMES{"FIRSTNAME", "LASTNAME", "TITLE", "SUBJECTS", "PASSWORD"};
+const std::vector<std::string> PROFESSOR_FIELD_NAMES{"FIRSTNAME", "LASTNAME", "TITLE", "SUBJECTS", "PESEL", "PASSWORD"};
 
 class ProfessorInfo : public cheshire::BasicData
 {
@@ -17,14 +17,16 @@ public:
 	std::string m_first_name;
 	std::string m_last_name;
 	std::string m_title;
+	std::string m_PESEL;
 	std::vector<std::string> m_subjects;
 public:
 	ProfessorInfo() {}
-	ProfessorInfo(const std::string& firstname, const std::string& lastname, const std::string& title, const std::vector<std::string>& subjects):
+	ProfessorInfo(const std::string& firstname, const std::string& lastname, const std::string& title, const std::vector<std::string>& subjects, const std::string& PESEL):
 		m_first_name(firstname),
 		m_last_name(lastname),
 		m_title(title),
-		m_subjects(subjects)
+		m_subjects(subjects),
+		m_PESEL(PESEL)
 	{
 		Random rand;
 		m_password = rand.token(10);
@@ -39,19 +41,20 @@ public:
 		vec[0] = m_first_name;
 		vec[1] = m_last_name;
 		vec[2] = m_title;
-		vec[4] = m_password;
 		std::ostringstream stream;
 		for(auto& i : m_subjects)
 		{
 			stream << i << " ";
 		}
 		vec[3] = stream.str();
+		vec[4] = m_PESEL;
+		vec[5] = m_password;
 		return vec;
 	}
 
 	void from_map(uint id, const std::unique_ptr<std::map<const std::string, std::string>>& data) override
 	{
-		m_password = data->at(project::PROFESSOR_FIELD_NAMES[4]);
+		m_password = data->at(project::PROFESSOR_FIELD_NAMES[5]);
 		m_id = id;
 		m_first_name = data->at(project::PROFESSOR_FIELD_NAMES[0]);
 		m_last_name = data->at(project::PROFESSOR_FIELD_NAMES[1]);
@@ -63,6 +66,7 @@ public:
 		{
 			m_subjects.push_back(str);
 		}
+		m_PESEL = data->at(project::PROFESSOR_FIELD_NAMES[4]);
 	}
 	//***************************************************//
 	friend std::ostream& operator<<(std::ostream& out, const ProfessorInfo& prof)

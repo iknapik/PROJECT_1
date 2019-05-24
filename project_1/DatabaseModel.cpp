@@ -94,6 +94,7 @@ void DatabaseModel::add(MarkInfo& info)
 template <>
 void DatabaseModel::add(ProfessorInfo& info)
 {
+	is_valid(info);
 	if (_add(info))
 	{		
 		m_mark_professor_lookup->emplace(info.get_id(), std::set<uint>{});
@@ -176,6 +177,8 @@ void DatabaseModel::update(const ClassInfo& info)
 
 void DatabaseModel::update(const ProfessorInfo& info)
 {
+	 
+	is_valid(info);
 	if (!m_professors_ptr->count(info.get_id())) throw DatabaseError(ErrorCode::INVALID_PROFESSOR_ID);
 	if (!_update(info)) throw DatabaseError(ErrorCode::DISSALOWED_CHARACTER);
 }
@@ -403,6 +406,13 @@ std::list<MarkInfo> DatabaseModel::get_marks_by_professor_id(uint id) const
 void DatabaseModel::is_valid(const StudentInfo& info) const
 {
 	if (!m_classes_ptr->count(info.m_class_id))				throw DatabaseError(ErrorCode::INVALID_CLASS_ID, info.m_class_id);
+	else if (!is_valid_PESEL(info.m_PESEL)) throw DatabaseError(ErrorCode::INVALID_PESEL, info.get_id());
+}
+
+
+void DatabaseModel::is_valid(const ProfessorInfo& info) const
+{
+	if (!is_valid_PESEL(info.m_PESEL)) throw DatabaseError(ErrorCode::INVALID_PESEL, info.get_id());
 }
 
 void DatabaseModel::is_valid(const MarkInfo& info) const
@@ -459,4 +469,16 @@ bool DatabaseModel::check_integrity() const
 		total_marks == total_marks2;
 
 
+}
+bool DatabaseModel::is_valid_PESEL(const std::string_view& strv) const
+{
+	if (strv.size() == 11)
+	{
+		for (auto& chr : strv)
+		{
+			if (!isdigit(chr)) return false;
+		}
+		return true;
+	}
+	return false;
 }

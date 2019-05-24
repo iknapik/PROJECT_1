@@ -20,6 +20,8 @@ enum class USERTYPE
 void get_response(std::string& buffer);
 //<<<<<<< HEAD
 std::string zmiana(std::string& ciag);
+
+unsigned get_prof_id_from_pesel(const DatabaseModel& db, const std::string& str);
 unsigned get_id_from_pesel(const DatabaseModel& db, const std::string& str);
 //bool pass(std::string ciag, std::string passw);
 //=======
@@ -49,7 +51,7 @@ int main()
 {
 	clean_db();
 	DatabaseModel db("cls_db.txt", "std_db.txt", "prs_db.txt", "mrk_db.txt");
-	 //generator if you want for testing
+	//generator if you want for testing
 	const unsigned students = 200;
 	const unsigned classes = 10;
 	const unsigned professors = 20;
@@ -57,7 +59,7 @@ int main()
 	Generator gen(students, classes, professors, marks);
 	gen.populate(db);
 
-	login:
+login:
 	stop = false;
 	USERTYPE type = login_view(db);
 	if (stop) return 1;
@@ -72,27 +74,34 @@ int main()
 	switch (type)
 	{
 	case USERTYPE::ADMIN:
-        {AdminView admin_view(db);
-		admin_view.menu();
-		if (admin_view.is_exit_requested()) return 2;
-		else goto login;
-            break;}
-    case USERTYPE::STUDENT:
-        {StudentView student_view(db,user_id);
-            student_view.menu();
-            if (student_view.get_stop()) return 3;
-    else goto login;
-            break;}
-    /*
-    case USERTYPE::PROFESSOR:
-        ProfessorView professor_view(db);
-        professor_view.menu();
-    if (aprofessor_view.is_exit_requested()) return 2;
-    else goto login;
-    break;
+	{AdminView admin_view(db);
+	admin_view.menu();
+	if (admin_view.is_exit_requested()) return 2;
+	else goto login;
+	break; }
+	case USERTYPE::STUDENT:
+	{StudentView student_view(db, user_id);
+	student_view.menu();
+	if (student_view.get_stop()) return 3;
+
+	else goto login;
+	break; }
+	case USERTYPE::PROFESSOR:
+		std::cout << "Nothing Here folks!\n";
+		break;
+	default:
+		break;
+	}
+	/*
+	case USERTYPE::PROFESSOR:
+		ProfessorView professor_view(db);
+		professor_view.menu();
+	if (aprofessor_view.is_exit_requested()) return 2;
+	else goto login;
+	break;
 	}*/
 
-    }
+
 	return 0;
 }
 
@@ -193,6 +202,52 @@ unsigned get_user_id(USERTYPE type, const DatabaseModel& db)
 			}
 		}
 		break;
+	case USERTYPE::PROFESSOR:
+		while (true)
+		{
+			std::cout << "PESEL:\n";
+
+			get_response(response);
+			if (is_exit_requested(response)) { stop = true; return 0; }
+
+			if (!is_valid_PESEL(response))
+			{
+				std::cout << "Invalid PESEL format! try  again!\n";
+				continue;
+			}
+			id = get_prof_id_from_pesel(db, response);
+			if (!id)
+			{
+				std::cout << "User with that PESEL not found! try again!\n";
+				continue;
+			}
+			password = db.get_by_id<ProfessorInfo>(id).get_password();
+
+			prof_password_:
+			std::cout << "Password:\n";
+
+			get_response(response);
+			if (is_exit_requested(response)) { stop = true; return 0; }
+
+			if (response == password) { std::cout << "access granted!\n"; return id; }
+			else {
+				std::cout << "Wrong password!";
+				if (i < 3)
+				{
+					std::cout << " This is your " << i << " attempt, only " << 3 - i << " left!" << std::endl;
+				}
+				if (i == 3)
+				{
+					std::cout << " Your account has been blocked, please contact with the administrator" << std::endl;
+					stop = true; return 0;
+				}
+				i++;
+				goto prof_password_;
+			}
+			//chcialam zrobic kolorki, ze taki czerwony error, ale u mnie nie dziala: "\33[0;31m" << "Wrong password!" << "\33[0m"
+		}
+		break;
+
 	default:
 		break;
 	}
@@ -239,8 +294,17 @@ std::string zmiana(std::string& ciag)
         }
         i++;
     }
-	std::cout << ciag << "\n";
     return ciag;
+}
+
+unsigned get_prof_id_from_pesel(const DatabaseModel& db, const std::string& str)
+{
+    auto prof_map = db.get_all<ProfessorInfo>();
+	for (auto& pair : prof_map)
+	{
+		if (pair.second->m_PESEL == str) return pair.first;
+	}
+    return 0;
 }
 
 
@@ -263,8 +327,7 @@ unsigned get_id_from_pesel(const DatabaseModel& db, const std::string& str)
 }
 bool is_exit_requested(std::string str)
 {
-	zmiana(str);
-	if (str == "Q" || str == "EXIT" || str == "QUIT") { stop = true; return true; }
+	if (str == "q" || str == "exit" || str == "quit" || str == "Q" || str == "EXIT" || str == "QUIT") { stop = true; return true; }
 	return false;
 }
 

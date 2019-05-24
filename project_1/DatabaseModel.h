@@ -120,8 +120,9 @@ private:
 		//these throw errors if infos are not valid
 		void is_valid(const StudentInfo& info) const;
 		//bool is_valid(const ClassInfo& info) const;
-		//bool is_valid(const ProfessorInfo& info) const;
+		void is_valid(const ProfessorInfo& info) const;
 		void is_valid(const MarkInfo& info) const;
+		bool is_valid_PESEL(const std::string_view& strv) const;
 		template <class Info>
 		bool _update(const Info& info);
 		template <class Info>

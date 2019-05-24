@@ -83,7 +83,7 @@ private:
 		Random rand{};
 		while (size-- != 0)
 		{
-			vec.emplace(vec.end(), get_name(rand), get_surname(rand), rand.token(3), std::vector<std::string>{rand.token(2), rand.token(2)});
+			vec.emplace(vec.end(), get_name(rand), get_surname(rand), rand.token(3), std::vector<std::string>{rand.token(2), rand.token(2)}, PESEL_gen(rand));
 		}
 		return vec;
 	}
