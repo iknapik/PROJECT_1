@@ -92,13 +92,15 @@ namespace project {
 		//updating throws DatabaseError if item doesn't exists
 		//when updating/adding student make sure it has proper class id
 		//when updating/adding mark make sure it has proper student and professor id
-		void update(const StudentInfo& info); //throws DatabaseError with errorcode:  ErrorCode::INVALID_STUDENT_ID, ErrorCode::DISSALOWED_CHARACTER, ErrorCode::INVALID_CLASS_ID
+		void update(const StudentInfo& info); //throws DatabaseError with errorcode:  ErrorCode::INVALID_STUDENT_ID, ErrorCode::DISSALOWED_CHARACTER, ErrorCode::INVALID_CLASS_ID, ErrorCode::INVALID_PESEL
 		void update(const ClassInfo& info); //throws DatabaseError with errorcode:  ErrorCode::INVALID_CLASS_ID, ErrorCode::DISSALOWED_CHARACTER
-		void update(const ProfessorInfo& info); //throws DatabaseError with errorcode:  ErrorCode::INVALID_PROFESSOR_ID, ErrorCode::DISSALOWED_CHARACTER
+
+		void update(const ProfessorInfo& info); //throws DatabaseError with errorcode:  ErrorCode::INVALID_PROFESSOR_ID, ErrorCode::DISSALOWED_CHARACTER, ErrorCode::INVALID_PESEL
 		void update(const MarkInfo& info); //throws DatabaseError with errorcode:  ErrorCode::INVALID_STUDENT_ID, ErrorCode::DISSALOWED_CHARACTER, ErrorCode::INVALID_PROFESSOR_ID, ErrorCode::INVALID_MARK_ID
 		
 		//adding modifies info object to set correct id
 		//so after adding you can use added object to get id info.get_id()
+		//adding student or professor may also throw ErrorCode::INVALID_PESEL
 		template <class Info>
 		void add(Info& info);
 		
