@@ -14,19 +14,18 @@ enum class USERTYPE
 {
 	ADMIN, PROFESSOR, STUDENT
 };
-bool is_exit_requested(std::string str)
-{
-	if (str == "Q" || str == "EXIT" || str == "QUIT") { stop = true; return true; }
-	return false;
-}
+
 
 //helper for geting userinput
 void get_response(std::string& buffer);
 //<<<<<<< HEAD
 std::string zmiana(std::string& ciag);
-unsigned get_id_from_pesel(const project::DatabaseModel& db, const std::string& str);
+unsigned get_id_from_pesel(const DatabaseModel& db, const std::string& str);
 //bool pass(std::string ciag, std::string passw);
 //=======
+
+bool is_exit_requested(std::string str);
+
 void clean_db()
 {
 	std::remove("std_db.txt");
@@ -42,11 +41,14 @@ void clean_db()
 //>>>>>>> 82c63ab01d037b4beb851d45cac974563b7bcb43
 
 //view where user can login returns info about privileges
-USERTYPE login_view(const project::DatabaseModel& db, std::string& response);
+USERTYPE login_view(const DatabaseModel& db);
+unsigned get_user_id(USERTYPE type, const DatabaseModel& db);
+bool is_valid_PESEL(const std::string_view& strv);
+
 int main()
-{   std::string response;
+{
 	clean_db();
-	project::DatabaseModel db("cls_db.txt", "std_db.txt", "prs_db.txt", "mrk_db.txt");
+	DatabaseModel db("cls_db.txt", "std_db.txt", "prs_db.txt", "mrk_db.txt");
 	 //generator if you want for testing
 	const unsigned students = 200;
 	const unsigned classes = 10;
@@ -56,11 +58,17 @@ int main()
 	gen.populate(db);
 
 	login:
-	USERTYPE type = login_view(db,response);
-    unsigned ID=get_id_from_pesel(db,response);
-	// tymczasowe rozwiązanie: :D
-	// ID = 100;
+	stop = false;
+	USERTYPE type = login_view(db);
 	if (stop) return 1;
+	unsigned user_id = get_user_id(type, db);
+	if (stop) return 1;
+	// jeżeli id jest = 0 to coś jest nie tak, chyba że to jest admin
+	if (type != USERTYPE::ADMIN && !user_id)
+	{
+		goto login;
+	}
+
 	switch (type)
 	{
 	case USERTYPE::ADMIN:
@@ -70,9 +78,9 @@ int main()
 		else goto login;
             break;}
     case USERTYPE::STUDENT:
-        {StudentView student_view(db,ID);
+        {StudentView student_view(db,user_id);
             student_view.menu();
-            if (student_view.get_stop()) return 2;
+            if (student_view.get_stop()) return 3;
     else goto login;
             break;}
     /*
@@ -88,58 +96,120 @@ int main()
 	return 0;
 }
 
-USERTYPE login_view(const project::DatabaseModel& db, std::string& response)
+USERTYPE login_view(const DatabaseModel& db)
 {
-    //std::string response;
-	std::string password;
-	USERTYPE type;
-    std::cout<<"--- Welcome to the online register ---"<<std::endl;
-    std::cout<<std::endl;
-    std::cout << "If you want to leave, press q|exit|quit\n";
-    std::cout<<"Type your Username: Admin|Professor|Student"<<std::endl;
-	
-	username:
+	std::string response;
+	std::cout << "--- Welcome to the online register ---" << std::endl;
+	std::cout << std::endl;
+	std::cout << "If you want to leave, press q|exit|quit\n";
+	std::cout << "Type your Username: Admin|Professor|Student" << std::endl;
+
 	while (true)
 	{
 		get_response(response);
-        zmiana(response);
-        
+		zmiana(response);
+
 		if (is_exit_requested(response)) { stop = true; return USERTYPE::STUDENT; }
-        if (response == "ADMIN") { password = db.get_admin_password(); type = USERTYPE::ADMIN;	break; }
-		else if (response == "PROFESSOR") { password = db.get_professor_password();	type = USERTYPE::PROFESSOR; break; }
-		else if (response == "STUDENT") { password = db.get_student_password(); type = USERTYPE::STUDENT;	break; }
+		if (response == "ADMIN") { return  USERTYPE::ADMIN; }
+		else if (response == "PROFESSOR") { return USERTYPE::PROFESSOR; }
+		else if (response == "STUDENT") { return  USERTYPE::STUDENT; }
 		std::cout << "Try again\n";
 	}
-    
-	if (password.empty())
+}
+unsigned get_user_id(USERTYPE type, const DatabaseModel& db)
+{
+	std::string response, password;
+	unsigned id;
+	int i = 1;
+	switch (type)
 	{
-		std::cout << "Password not set!\n";
-		goto username;
+	case USERTYPE::STUDENT:
+		while (true)
+		{
+			std::cout << "PESEL:\n";
+
+			get_response(response);
+			if (is_exit_requested(response)) { stop = true; return 0; }
+
+			if (!is_valid_PESEL(response))
+			{
+				std::cout << "Invalid PESEL format! try  again!\n";
+				continue;
+			}
+			id = get_id_from_pesel(db, response);
+			if (!id)
+			{
+				std::cout << "User with that PESEL not found! try again!\n";
+				continue;
+			}
+			password = db.get_by_id<StudentInfo>(id).get_password();
+
+			password_:
+			std::cout << "Password:\n";
+
+			get_response(response);
+			if (is_exit_requested(response)) { stop = true; return 0; }
+
+			if (response == password) { std::cout << "access granted!\n"; return id; }
+			else {
+				std::cout << "Wrong password!";
+				if (i < 3)
+				{
+					std::cout << " This is your " << i << " attempt, only " << 3 - i << " left!" << std::endl;
+				}
+				if (i == 3)
+				{
+					std::cout << " Your account has been blocked, please contact with the administrator" << std::endl;
+					stop = true; return 0;
+				}
+				i++;
+				goto password_;
+			}
+			//chcialam zrobic kolorki, ze taki czerwony error, ale u mnie nie dziala: "\33[0;31m" << "Wrong password!" << "\33[0m"
+		}
+		break;
+	case USERTYPE::ADMIN:
+		password = db.get_admin_password();
+		while (true)
+		{
+			std::cout << "Password:\n";
+
+			get_response(response);
+			if (is_exit_requested(response)) { stop = true; return 0; }
+
+			if (response == password) { std::cout << "access granted!\n"; return 0; }
+			else {
+				std::cout << "Wrong password!";
+				if (i < 3)
+				{
+					std::cout << " This is your " << i << " attempt, only " << 3 - i << " left!" << std::endl;
+				}
+				if (i == 3)
+				{
+					std::cout << " Your account has been blocked, please contact with the administrator" << std::endl;
+					stop = true; return 0;
+				}
+				i++;
+			}
+		}
+		break;
+	default:
+		break;
 	}
-    
-  
-    int i =1;
-password_:
-    while(true)
-    {
-        std::cout << "Password:\n";
-	
-		get_response(response);
-		if (is_exit_requested(response)) { stop = true; return USERTYPE::STUDENT; }
-		if (response==password) { std::cout << "access granted!\n"; return type; }
-        else {std::cout<< "Wrong password!";
-            if(i<3)
-            {std::cout<<" This is your "<<i<<" attempt, only "<<3-i<<" left!"<<std::endl;}
-            if(i==3)
-            {std::cout<<" Your account has been blocked, please contact with the administrator"<<std::endl;
-                stop = true; return USERTYPE::STUDENT;}
-            i++;
-            goto password_;}
-        //chcialam zrobic kolorki, ze taki czerwony error, ale u mnie nie dziala: "\33[0;31m" << "Wrong password!" << "\33[0m"
-    }
-    
 }
 
+bool is_valid_PESEL(const std::string_view& strv)
+{
+	if (strv.size() == 11)
+	{
+		for (auto& chr : strv)
+		{
+			if (!isdigit(chr)) return false;
+		}
+		return true;
+	}
+	return false;
+}
 void get_response(std::string& buffer)
 {
 	while (true) 
@@ -169,11 +239,12 @@ std::string zmiana(std::string& ciag)
         }
         i++;
     }
+	std::cout << ciag << "\n";
     return ciag;
 }
 
 
-unsigned get_id_from_pesel(const project::DatabaseModel& db, const std::string& str)
+unsigned get_id_from_pesel(const DatabaseModel& db, const std::string& str)
 {
     auto stud_list = db.find_students(str);
     if (!stud_list.empty())
@@ -190,7 +261,12 @@ unsigned get_id_from_pesel(const project::DatabaseModel& db, const std::string& 
     else //brak wyników
         return 0;
 }
-
+bool is_exit_requested(std::string str)
+{
+	zmiana(str);
+	if (str == "Q" || str == "EXIT" || str == "QUIT") { stop = true; return true; }
+	return false;
+}
 
 /*
 bool pass(std::string ciag, std::string passw)
