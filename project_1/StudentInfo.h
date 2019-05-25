@@ -7,7 +7,6 @@
 #include <vector>
 #include <map>
 #include "BasicData.h"
-#include "Random.h"
 
 //Simple lightweigh class that stores data about students
 //implements BasicData iterface to work with BaseDao
@@ -16,7 +15,7 @@ namespace project
 {
 // make sure to pass this vector to BaseDao constructor
 // or from_map will be throwing out_of_range exceptions
-const std::vector<std::string> STUDENT_FIELD_NAMES{"FIRSTNAME", "LASTNAME", "PESEL", "CITY", "ADDRESS", "CLASS_ID", "PASSWORD"};
+const std::vector<std::string> STUDENT_FIELD_NAMES{"FIRSTNAME", "LASTNAME", "PESEL", "CITY", "ADDRESS", "CLASS_ID"};
 
 
 class StudentInfo : public cheshire::BasicData
@@ -32,10 +31,16 @@ public:
 	std::string m_address;
 	uint m_class_id;
 private:
-	std::string m_password;
 	uint m_id = 0;
 public:
-	StudentInfo() {}
+	StudentInfo() : m_firstname("FIRSTNAME"),
+		m_lastname("LASTNAME"),
+		m_PESEL("00000000000"),
+		m_city("CITY"),
+		m_address("ADDRESS"),
+		m_class_id(0) {
+		
+	}
 	StudentInfo(const std::string& firstname, const std::string& lastname, const std::string& PESEL, const std::string& city, const std::string& address, uint class_id = 0) :
 		m_firstname(firstname),
 		m_lastname(lastname),
@@ -43,11 +48,11 @@ public:
 		m_city(city),
 		m_address(address),
 		m_class_id(class_id)
-	{
-		Random rand;
-		m_password = rand.token(10);
-	}
-	const std::string& get_password() const { return m_password; }
+	{}
+
+	
+	
+
 	bool empty() const { return m_firstname.empty(); }
 
 	unsigned get_class_id() const { return m_class_id; }
@@ -58,18 +63,18 @@ public:
 		return out;
 	}	
 
+
 	//****************** <INTERFACE IMPLEMENTATION> ******************//
 	void set_id(uint id) override { m_id = id; }
 	std::vector<std::string> to_string_vector() const override
 	{
-		std::vector<std::string> vec(7);
+		std::vector<std::string> vec(6);
 		vec[0] = m_firstname;
 		vec[1] = m_lastname;
 		vec[2] = m_PESEL;
 		vec[3] = m_city;
 		vec[4] = m_address;
 		vec[5] = std::to_string(m_class_id);
-		vec[6] = m_password;
 			return vec;
 	};
 	void from_map(unsigned id, const std::unique_ptr<std::map<const std::string, std::string>>& map) override
@@ -83,9 +88,9 @@ public:
 		m_city = map->at(project::STUDENT_FIELD_NAMES[3]);
 		m_address = map->at(project::STUDENT_FIELD_NAMES[4]);
 		m_class_id = std::stoul(map->at(project::STUDENT_FIELD_NAMES[5]));
-		m_password = map->at(project::STUDENT_FIELD_NAMES[6]);
 	}
 	unsigned get_id() const override { return m_id; }	
+	
 	//****************** </INTERFACE IMPLEMENTATION> ******************//
 };
 

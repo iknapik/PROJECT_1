@@ -51,7 +51,7 @@ namespace project {
 		std::string get_professor_password() const {return m_professor_password;}
 		std::string get_student_password() const {return m_student_password;}
 
-		// returns flase if passwords contains ','
+		// returns false if passwords contains ','
 		bool set_admin_password(const std::string& password) {m_admin_password = password; return save_password();}
 		bool set_professor_password(const std::string& password) {m_professor_password = password; return save_password();}
 		bool set_student_password(const std::string& password) {m_student_password = password; return save_password();}
@@ -61,7 +61,10 @@ namespace project {
 		std::list<StudentInfo> find_students(const std::string& str) const;
 
 		//if no students found these functions return empty list
+
+		std::list<StudentInfo> get_students() const;
 		std::list<StudentInfo> get_students_by_ids(const std::set<uint>& ids) const;
+		std::list<StudentInfo> get_student_by_id(uint id) const;
 		std::list<StudentInfo> get_students_by_class(const std::string& str) const;
 		std::list<StudentInfo> get_students_by_class(uint id) const;
 		
@@ -92,15 +95,13 @@ namespace project {
 		//updating throws DatabaseError if item doesn't exists
 		//when updating/adding student make sure it has proper class id
 		//when updating/adding mark make sure it has proper student and professor id
-		void update(const StudentInfo& info); //throws DatabaseError with errorcode:  ErrorCode::INVALID_STUDENT_ID, ErrorCode::DISSALOWED_CHARACTER, ErrorCode::INVALID_CLASS_ID, ErrorCode::INVALID_PESEL
+		void update(const StudentInfo& info); //throws DatabaseError with errorcode:  ErrorCode::INVALID_STUDENT_ID, ErrorCode::DISSALOWED_CHARACTER, ErrorCode::INVALID_CLASS_ID
 		void update(const ClassInfo& info); //throws DatabaseError with errorcode:  ErrorCode::INVALID_CLASS_ID, ErrorCode::DISSALOWED_CHARACTER
-
-		void update(const ProfessorInfo& info); //throws DatabaseError with errorcode:  ErrorCode::INVALID_PROFESSOR_ID, ErrorCode::DISSALOWED_CHARACTER, ErrorCode::INVALID_PESEL
+		void update(const ProfessorInfo& info); //throws DatabaseError with errorcode:  ErrorCode::INVALID_PROFESSOR_ID, ErrorCode::DISSALOWED_CHARACTER
 		void update(const MarkInfo& info); //throws DatabaseError with errorcode:  ErrorCode::INVALID_STUDENT_ID, ErrorCode::DISSALOWED_CHARACTER, ErrorCode::INVALID_PROFESSOR_ID, ErrorCode::INVALID_MARK_ID
 		
 		//adding modifies info object to set correct id
 		//so after adding you can use added object to get id info.get_id()
-		//adding student or professor may also throw ErrorCode::INVALID_PESEL
 		template <class Info>
 		void add(Info& info);
 		
@@ -122,9 +123,8 @@ private:
 		//these throw errors if infos are not valid
 		void is_valid(const StudentInfo& info) const;
 		//bool is_valid(const ClassInfo& info) const;
-		void is_valid(const ProfessorInfo& info) const;
+		//bool is_valid(const ProfessorInfo& info) const;
 		void is_valid(const MarkInfo& info) const;
-		bool is_valid_PESEL(const std::string_view& strv) const;
 		template <class Info>
 		bool _update(const Info& info);
 		template <class Info>
@@ -160,7 +160,7 @@ private:
 				if (*beg != chr && *end != chr) break;
 			}
 			if (end == beg && chr == *beg) return std::string();
-			return std::string(beg, end + 1);
+			return std::string(beg, end);
 		}
 		
 	};

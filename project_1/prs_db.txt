@@ -1,0 +1,3 @@
+ID FIRSTNAME LASTNAME TITLE SUBJECTS 
+101,Patrick,PHILLIPS,wt4,y: =? ,
+102,Tyler,DIAZ,l\|,|| >A ,

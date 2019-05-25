@@ -1,0 +1,13 @@
+﻿  AdminView.cpp
+  CSVDb.cpp
+  DatabaseModel.cpp
+  IdManager.cpp
+  main.cpp
+c:\users\irene\desktop\pulpit\project_1-master (1)\project_1-master\project_1\generator.h(157): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\irene\desktop\pulpit\project_1-master (1)\project_1-master\project_1\generator.h(162): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\irene\desktop\pulpit\project_1-master (1)\project_1-master\project_1\generator.h(167): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+c:\users\irene\desktop\pulpit\project_1-master (1)\project_1-master\project_1\generator.h(172): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  StudentView.cpp
+  Generating Code...
+c:\users\irene\desktop\pulpit\project_1-master (1)\project_1-master\project_1\errors.h(53): warning C4715: 'project::DatabaseError::what': not all control paths return a value
+  project_1.vcxproj -> C:\Users\irene\Desktop\pulpit\PROJECT_1-master (1)\PROJECT_1-master\x64\Debug\project_1.exe

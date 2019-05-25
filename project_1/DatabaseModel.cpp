@@ -7,7 +7,6 @@ using namespace project;
 
 DatabaseModel::DatabaseModel(const std::string& class_db_name, const std::string& stud_db_name, const std::string& prof_db_name, const std::string& mark_db_name)
 {
-
 	m_classdao = std::make_unique<BaseDao<ClassInfo>>(class_db_name.c_str(), CLASS_FIELD_NAMES);
 	m_sdao = std::make_unique<BaseDao<StudentInfo>>(stud_db_name.c_str(), STUDENT_FIELD_NAMES);
 	m_profdao = std::make_unique<BaseDao<ProfessorInfo>>(prof_db_name.c_str(), PROFESSOR_FIELD_NAMES);
@@ -18,9 +17,9 @@ DatabaseModel::DatabaseModel(const std::string& class_db_name, const std::string
 	m_classes_ptr = m_classdao->get_rows();
 	m_students_ptr = m_sdao->get_rows();
 
-	m_slookup = std::make_unique<std::map<uint, std::string>>();
-	m_mark_student_lookup = std::make_unique < std::unordered_map<uint, std::set<uint>>>();
-	m_mark_professor_lookup = std::make_unique < std::unordered_map<uint, std::set<uint>>>();
+	m_slookup = std::make_unique<std::map<unsigned, std::string>>();
+	m_mark_student_lookup = std::make_unique < std::unordered_map<unsigned, std::set<unsigned>>>();
+	m_mark_professor_lookup = std::make_unique < std::unordered_map<unsigned, std::set<unsigned>>>();
 	
 	auto file = std::ifstream("passwords.txt", std::ios::in);
 	if (file.fail()) { m_admin_password = "admin"; m_professor_password = "professor"; m_student_password = "student"; save_password(); }
@@ -44,7 +43,6 @@ DatabaseModel::DatabaseModel(const std::string& class_db_name, const std::string
 		m_mark_student_lookup->at(pair.second->m_student_id).insert(pair.first);
 		m_mark_professor_lookup->at(pair.second->m_professor_id).insert(pair.first);
 	}
-
 }
 
 // getters for add/remove/update //
@@ -94,7 +92,6 @@ void DatabaseModel::add(MarkInfo& info)
 template <>
 void DatabaseModel::add(ProfessorInfo& info)
 {
-	is_valid(info);
 	if (_add(info))
 	{		
 		m_mark_professor_lookup->emplace(info.get_id(), std::set<uint>{});
@@ -177,8 +174,6 @@ void DatabaseModel::update(const ClassInfo& info)
 
 void DatabaseModel::update(const ProfessorInfo& info)
 {
-	 
-	is_valid(info);
 	if (!m_professors_ptr->count(info.get_id())) throw DatabaseError(ErrorCode::INVALID_PROFESSOR_ID);
 	if (!_update(info)) throw DatabaseError(ErrorCode::DISSALOWED_CHARACTER);
 }
@@ -313,7 +308,31 @@ std::list<StudentInfo> DatabaseModel::find_students(const std::string& str) cons
 	return list;
 	
 }
+std::list<StudentInfo> DatabaseModel::get_students() const
+{
+	auto list = std::list<StudentInfo>();
+	
+	for (auto& it:(*m_students_ptr))
+	{
+		list.push_back((*it.second));
 
+	}
+	return list;
+
+}
+std::list<StudentInfo> DatabaseModel::get_student_by_id(uint id) const
+{
+	auto list = std::list<StudentInfo>();
+
+	for (auto& it : (*m_students_ptr))
+	{	
+		if (it.second->get_id() == id) {
+			list.push_back((*it.second));
+			return list;
+		}
+	}
+	return list;
+}
 
 std::list<StudentInfo> DatabaseModel::get_students_by_ids(const std::set<uint>& ids) const
 {
@@ -406,13 +425,6 @@ std::list<MarkInfo> DatabaseModel::get_marks_by_professor_id(uint id) const
 void DatabaseModel::is_valid(const StudentInfo& info) const
 {
 	if (!m_classes_ptr->count(info.m_class_id))				throw DatabaseError(ErrorCode::INVALID_CLASS_ID, info.m_class_id);
-	else if (!is_valid_PESEL(info.m_PESEL)) throw DatabaseError(ErrorCode::INVALID_PESEL, info.get_id());
-}
-
-
-void DatabaseModel::is_valid(const ProfessorInfo& info) const
-{
-	if (!is_valid_PESEL(info.m_PESEL)) throw DatabaseError(ErrorCode::INVALID_PESEL, info.get_id());
 }
 
 void DatabaseModel::is_valid(const MarkInfo& info) const
@@ -469,16 +481,4 @@ bool DatabaseModel::check_integrity() const
 		total_marks == total_marks2;
 
 
-}
-bool DatabaseModel::is_valid_PESEL(const std::string_view& strv) const
-{
-	if (strv.size() == 11)
-	{
-		for (auto& chr : strv)
-		{
-			if (!isdigit(chr)) return false;
-		}
-		return true;
-	}
-	return false;
 }
